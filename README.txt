@@ -3,7 +3,11 @@ Derek Huang
 
 08-30-2018
 
-List of functions and defines:
+*** List of functions and defines ***
+
+stats.c, stats.h:
+
+
 
 
 
