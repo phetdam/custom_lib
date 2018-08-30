@@ -1,5 +1,8 @@
 #ifndef STATS_H
 #define STATS_H
+// define standard normal mu and s
+#define STD_MU 0
+#define STD_S 1
 // define constants for normalcdf function
 #define A_1 0.0705230784
 #define A_2 0.0422820123
@@ -7,5 +10,8 @@
 #define A_4 0.0001520143
 #define A_5 0.0002765672
 #define A_6 0.0000430638
+// declare normalcdf and normalpdf
+double normalcdf(double x, double mu, double s);
+double normalpdf(double x, double mu, double s);
 
 #endif /* STATS_H */
