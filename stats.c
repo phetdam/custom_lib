@@ -6,11 +6,9 @@
  * Changelog:
  *
  * 08-30-2018
- *
  * added normalpdf function, makefile, main function; edited normalcdf function and stats files
  *
  * 08-29-2018
- *
  * initial completion of normalcdf function, using abramowitz and stegun's approximation for erf
  */
 
