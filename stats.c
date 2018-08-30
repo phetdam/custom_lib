@@ -12,6 +12,7 @@
 // normal cdf function; uses abramowitz' and stegun's approximation 7.1.28 with absolute error 
 // 3 * 10^(-7); x is the value of which we wish to find P(X < x), mu is mean (X ~ N(mu, s^2)),
 // and s is standard deviation. link to their text: http://people.math.sfu.ca/~cbm/aands/toc.htm
+// since the range of x is from -inf to x, subtract by 0.5 to get P(0 < X < x)
 double normalcdf(double x, double mu, double s) {
     assert(s >= 0);
     // normalize x
