@@ -1,6 +1,5 @@
 /*
  * stats.c
- *
  * contains (soon!) several useful statistics functions that C lacks.
  *
  * Changelog:
