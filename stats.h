@@ -1,3 +1,16 @@
+/*
+ * stats.h
+ * contains macros and function declarations for stats.c
+ *
+ * Changelog:
+ *
+ * 08-30-2018
+ * added changelog and function declarations
+ *
+ * 08-28-2018
+ * initial completion
+ */
+
 #ifndef STATS_H
 #define STATS_H
 // define standard normal mu and s
