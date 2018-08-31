@@ -26,5 +26,6 @@
 // declare normalcdf and normalpdf
 double normalcdf(double x, double mu, double s);
 double normalpdf(double x, double mu, double s);
+// declarations for random number generators
 
 #endif /* STATS_H */
