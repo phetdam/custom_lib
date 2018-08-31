@@ -22,16 +22,16 @@
 // since the range of x is from -inf to x, subtract by 0.5 to get P(0 < X < x)
 // use mu = STD_MU and s = STD_S for standard normal cdf
 double normalcdf(double x, double mu, double s) {
-  assert(s >= 0);
-  // normalize x
-  x = (x - mu) / s / sqrt(2);
-  return 0.5 + 0.5 * (1.0 - pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + \
-				A_4 * pow(x, 4) + A_5 * pow(x, 5) + A_6 * pow(x, 6), -16));
+    assert(s >= 0);
+    // normalize x
+    x = (x - mu) / s / sqrt(2);
+    return 0.5 + 0.5 * (1.0 - pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + \
+				  A_4 * pow(x, 4) + A_5 * pow(x, 5) + A_6 * pow(x, 6), -16));
 }
 
 // normal pdf function; use mu = STD_MU and s = STD_S for standard normal pdf
 // note that M_PI is defined up to 16 digits of floating precision
 double normalpdf(double x, double mu, double s) {
-  assert(s >= 0);
-  return pow(s * sqrt(2 * M_PI), -1) * exp(-1 * pow(x - mu, 2) / 2 / pow(s, 2));
+    assert(s >= 0);
+    return pow(s * sqrt(2 * M_PI), -1) * exp(-1 * pow(x - mu, 2) / 2 / pow(s, 2));
 }
