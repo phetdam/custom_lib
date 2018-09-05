@@ -25,8 +25,18 @@ double normalcdf(double x, double mu, double s) {
     assert(s >= 0);
     // normalize x
     x = (x - mu) / s / sqrt(2);
-    return 0.5 + 0.5 * (1.0 - pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + \
+    return 0.5 + 0.5 * (1.0 - pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) +
 				  A_4 * pow(x, 4) + A_5 * pow(x, 5) + A_6 * pow(x, 6), -16));
+}
+
+// normal cdf function; uses abramowitz' and stegun's approximation 26.2.19 for normal cdf with
+// absolute error 1.5 * 10^(-7) http://people.math.sfu.ca/~cbm/aands/page_932.htm
+double normalcdf1(double x, double mu, double s) {
+    assert(s >= 0);
+    // normalize x
+    x = (x - mu) / s;
+    return 1 - 0.5 * pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + A_4 * pow(x, 4) + \
+			 A_5 * pow(x, 5) + A_6 * pow(x, 6), -16);
 }
 
 // normal pdf function; use mu = STD_MU and s = STD_S for standard normal pdf
