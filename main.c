@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 // any other header files to include
@@ -10,11 +11,31 @@ int main(int argc, char **argv) {
     // run normally if there are no arguments
     /*** TESTING AREA ***/
     if (argc == 1) {
-	double x = 1.1;
+	// why is the distribution for my old normalcdf using the erf not symmetric? weird
+	// test using a bunch of values; normalcdf up to mean and then 1- normalcdf afterwards
+	// compare values and see what's up
+
+	// x, min-max range and step
+	double x, min, max, step;
+	min = -3;
+	max = 3;
+	step = 0.1;
+	x = min - step;
+	// standardized mu and s
 	double mu = 0;
 	double s = 1;
-	printf("normalpdf(x = %.2lf, mu = %.2lf, s = %.2lf) -> %.9lf\n", x, mu, s, normalpdf(x, mu, s));
-	printf("normalcdf(x = %.2lf, mu = %.2lf, s = %.2lf) -> %.9lf\n", x, mu, s, normalcdf(x, mu, s));
+	// print headers
+	printf("%13s %13s\n", "normalcdf()", "normalcdf1()");
+	// while x is less than or equal to max
+	while ((x += step) <= max) {
+	    // old cdf and new cdf values; do 1 - * if x > mu
+	    double oc, nc;
+	    oc = normalcdf(x, mu, s);
+	    oc = (x > mu) ? 1 - oc : oc;
+	    nc = normalcdf1(x, mu, s);
+	    nc = (x > mu) ? 1 - nc : nc;
+	    printf("%13.9lf %13.9lf\n", normalcdf(x, mu, s), normalcdf1(x, mu, s));
+	}
     }
     // else if there is one argument
     else if (argc == 2) {
