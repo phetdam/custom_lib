@@ -4,6 +4,10 @@
  *
  * Changelog:
  *
+ * 09-10-2018
+ * corrected asymmetric behavior of normalcdf function; replaced original erf implementation 
+ * with a different and more accurate numerical approximation.
+ *
  * 08-30-2018
  * added normalpdf function, makefile, main function; edited normalcdf function and stats files
  *
@@ -16,26 +20,24 @@
 #include <math.h>
 #include "stats.h"
 
-// normal cdf function; uses abramowitz' and stegun's approximation 7.1.28 for erf with absolute
-// error 3 * 10^(-7); x is the value of which we wish to find P(X < x), mu is mean (X ~ N(mu, s^2)),
-// and s is standard deviation. link to their text: http://people.math.sfu.ca/~cbm/aands/toc.htm
+// normal cdf function; uses abramowitz' and stegun's approximation 26.2.19 for normal cdf with
+// absolute error 1.5 * 10^(-7) http://people.math.sfu.ca/~cbm/aands/page_932.htm
+// note that the approximation was defined to work only where x >= 0, so for values of x < mu,
+// we approximate P(X < x | x < mu) == 1 - P(X < abs(x))
 // since the range of x is from -inf to x, subtract by 0.5 to get P(0 < X < x)
 // use mu = STD_MU and s = STD_S for standard normal cdf
 double normalcdf(double x, double mu, double s) {
     assert(s >= 0);
     // normalize x
-    x = (x - mu) / s / sqrt(2);
-    return 0.5 + 0.5 * (1.0 - pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) +
-				  A_4 * pow(x, 4) + A_5 * pow(x, 5) + A_6 * pow(x, 6), -16));
-}
-
-// normal cdf function; uses abramowitz' and stegun's approximation 26.2.19 for normal cdf with
-// absolute error 1.5 * 10^(-7) http://people.math.sfu.ca/~cbm/aands/page_932.htm
-double normalcdf1(double x, double mu, double s) {
-    assert(s >= 0);
-    // normalize x
     x = (x - mu) / s;
-    return 1 - 0.5 * pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + A_4 * pow(x, 4) + \
+    // if x >= 0, return the approximation
+    if (x >= 0) {
+	return 1 - 0.5 * pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + A_4 * pow(x, 4) + \
+			     A_5 * pow(x, 5) + A_6 * pow(x, 6), -16);
+    }
+    // else change sign of negative x and return 1 - the approximation
+    x = -1 * x;
+    return 0.5 * pow(1 + A_1 * x + A_2 * pow(x, 2) + A_3 * pow(x, 3) + A_4 * pow(x, 4) + \
 			 A_5 * pow(x, 5) + A_6 * pow(x, 6), -16);
 }
 
