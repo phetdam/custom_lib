@@ -15,26 +15,20 @@ int main(int argc, char **argv) {
 	// test using a bunch of values; normalcdf up to mean and then 1- normalcdf afterwards
 	// compare values and see what's up
 
-	// x, min-max range and step
-	double x, min, max, step;
-	min = -3;
-	max = 3;
+	// x, start and step
+	double x, m, step;
+	m = -3;
 	step = 0.1;
-	x = min - step;
+	x = m - step;
 	// standardized mu and s
 	double mu = 0;
 	double s = 1;
 	// print headers
-	printf("%13s %13s\n", "normalcdf()", "normalcdf1()");
-	// while x is less than or equal to max
-	while ((x += step) <= max) {
-	    // old cdf and new cdf values; do 1 - * if x > mu
-	    double oc, nc;
-	    oc = normalcdf(x, mu, s);
-	    oc = (x > mu) ? 1 - oc : oc;
-	    nc = normalcdf1(x, mu, s);
-	    nc = (x > mu) ? 1 - nc : nc;
-	    printf("%13.9lf %13.9lf\n", normalcdf(x, mu, s), normalcdf1(x, mu, s));
+	printf("        %15s         %15s\n", "normalcdf()", "1-normalcdf()");
+	// while x is less than or equal to mean
+	while ((x += step) <= mu + step) {
+	    printf("%+7.3lf %15.9lf %+7.3lf %15.9lf\n", x, normalcdf(x, mu, s), -1 * x, 1 - \
+		   normalcdf(-1 * x, mu, s));
 	}
     }
     // else if there is one argument
