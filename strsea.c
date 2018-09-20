@@ -17,10 +17,16 @@
  * the program here has been modified from the original solution to write results
  * to the output file strsea_out.
  *
- * recommended compilation: 'gcc -Wall -g -o strsea strsea.c strh_table.c strh_table.h'
+ * recommended compilation is using the Makefile provided in the directory and 
+ * typing 'make strsea'. from the command line 'gcc -Wall -g -o strsea strsea.c 
+ * strh_table.c strh_table.h' is the preferred build method.
  * please run by reading input file from stdin: './strsea < sparse_arrays_input01'
  *
  * Changelog:
+ *
+ * 09-20-2018
+ *
+ * edited file description and updated build information
  *
  * 09-19-2018
  *
