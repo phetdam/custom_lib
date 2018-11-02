@@ -2,6 +2,10 @@
 #
 # changelog:
 #
+# 11-02-2018
+#
+# rewrote makefile, added dummy target and variables for targets
+#
 # 10-14-2018
 #
 # added target for n_dirname
@@ -15,30 +19,53 @@
 #
 # initial edit
 
-CC=gcc
-CFLAGS=-Wall -g
+CC = gcc
+CFLAGS = -Wall -g
+
+# target names
+# main target
+MAIN_T = main
+# stats target
+STATS_T = stats
+# strsea
+STRSEA_T = strsea
+# strh_table
+STRH_TABLE_T = strh_table
+# n_dirname
+N_DIRNAME_T = n_dirname
+
+# dummy target
+dummy:
 
 # creating the main executable; update dependencies depending on test
-main: main.c stats.o # any other object files after main.c
-	$(CC) $(CFLAGS) -o main main.c stats.o # and any other object files after main.c
+$(MAIN_T): $(MAIN_T).c stats.o # any other object files after main.c
+	$(CC) $(CFLAGS) -o $(MAIN_T) $(MAIN_T).c stats.o # and any other object files after main.c
 
 # stats package object file
-stats: stats.c stats.h
-	$(CC) $(CFLAGS) -c stats.c
+$(STATS_T): $(STATS_T).c $(STATS_T).h
+	$(CC) $(CFLAGS) -c $(STATS_T).c
 
 # creates the strsea executable, which uses strsea.c, strh_table.h and strh_table.c
-strsea: strsea.c strh_table.o
-	$(CC) $(CFLAGS) -o strsea strsea.c strh_table.o
+$(STRSEA_T): $(STRSEA_T).c strh_table.o
+	$(CC) $(CFLAGS) -o $(STRSEA_T) $(STRSEA_T).c $(STRH_TABLE_T).o
 
 # strh_table.* package object file (string hash table)
-strh_table: strh_table.c strh_table.h
-	$(CC) $(CFLAGS) -c strh_table.c
+$(STRH_TABLE_T): $(STRH_TABLE_T).c $(STRH_TABLE_T).h
+	$(CC) $(CFLAGS) -c $(STRH_TABLE_T).c
 
 # n_dirname
-n_dirname: n_dirname.c
-	$(CC) $(CFLAGS) -o n_dirname n_dirname.c
+$(N_DIRNAME_T): $(N_DIRNAME_T).c
+	$(CC) $(CFLAGS) -o $(N_DIRNAME_T) $(N_DIRNAME_T).c
 
-# clean directory of object files and autosave files
+# clean autosave files from directory
 clean:
+	$(RM) -vf *~
+
+# clean object files from directory too with autosave
+clean_o:
 	$(RM) -vf *.o *~
+
+# clean object files and executables as well with autosave
+clean_e:
+	$(RM) -vf *.o *.exe *~
 
