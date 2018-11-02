@@ -7,15 +7,18 @@ This directory will contain C source and header files that implement useful func
 
 Most used for my own purposes; it'd be much easier to import these bad boys in than implement things from scratch over and over again. These also serve as a fun programming exercise for a beginner like me.
 
-*** Function/struct declarations ***
+## Function/struct declarations
 
-stats.c, stats.h:
+##### stats.c, stats.h:
 
+```c
 double normalcdf(double x, double mu, double s)
 double normalpdf(double x, double mu, double s)
+```
 
-strh_table.c, strh_table.h:
+##### strh_table.c, strh_table.h:
 
+```c
 struct ht_node {
     char *str;
     struct ht_node *next;
@@ -32,6 +35,7 @@ int hfunc(char *s, int siz)
 void h_table_insert(h_table *ht, char *s)
 int h_table_nsearch(h_table *ht, char *s)
 void free_h_table(h_table *ht)
+```
 
 Todo: implement LCG, xorshift+ (128plus?)
 
