@@ -4,7 +4,8 @@
 #
 # 11-02-2018
 #
-# rewrote makefile, added dummy target and variables for targets
+# rewrote makefile, added dummy target and variables for targets. removed target
+# for n_dirname
 #
 # 10-14-2018
 #
@@ -31,8 +32,6 @@ STATS_T = stats
 STRSEA_T = strsea
 # strh_table
 STRH_TABLE_T = strh_table
-# n_dirname
-N_DIRNAME_T = n_dirname
 
 # dummy target
 dummy:
@@ -52,10 +51,6 @@ $(STRSEA_T): $(STRSEA_T).c strh_table.o
 # strh_table.* package object file (string hash table)
 $(STRH_TABLE_T): $(STRH_TABLE_T).c $(STRH_TABLE_T).h
 	$(CC) $(CFLAGS) -c $(STRH_TABLE_T).c
-
-# n_dirname
-$(N_DIRNAME_T): $(N_DIRNAME_T).c
-	$(CC) $(CFLAGS) -o $(N_DIRNAME_T) $(N_DIRNAME_T).c
 
 # clean autosave files from directory
 clean:
