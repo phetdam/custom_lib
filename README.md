@@ -12,8 +12,8 @@ Most used for my own purposes; it'd be much easier to import these bad boys in t
 ##### stats.c, stats.h:
 
 ```c
-double normalcdf(double x, double mu, double s)
-double normalpdf(double x, double mu, double s)
+double normalcdf(double x, double mu, double s);
+double normalpdf(double x, double mu, double s);
 ```
 
 ##### strh_table.c, strh_table.h:
@@ -22,19 +22,19 @@ double normalpdf(double x, double mu, double s)
 struct ht_node {
     char *str;
     struct ht_node *next;
-}
-typedef struct ht_node ht_node
+};
+typedef struct ht_node ht_node;
 
 struct h_table {
     ht_node **table;
     int siz;
 }
-typedef struct h_table h_table
+typedef struct h_table h_table;
 
-int hfunc(char *s, int siz)
-void h_table_insert(h_table *ht, char *s)
-int h_table_nsearch(h_table *ht, char *s)
-void free_h_table(h_table *ht)
+int hfunc(char *s, int siz);
+void h_table_insert(h_table *ht, char *s);
+int h_table_nsearch(h_table *ht, char *s);
+void free_h_table(h_table *ht);
 ```
 
 Todo: implement LCG, xorshift+ (128plus?)
