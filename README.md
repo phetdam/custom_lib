@@ -9,6 +9,8 @@ This directory will contain C source and header files that implement useful func
 
 Most used for my own purposes; it'd be much easier to import these bad boys in than implement things from scratch over and over again. These also serve as a fun programming exercise for a beginner like me.
 
+Also what I really hate about markdown: line breaks are created by putting __two spaces__ after a line of text. So it's very difficult to tell visually where the line break is...
+
 ## Function/struct declarations
 
 ##### stats.c, stats.h:
