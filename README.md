@@ -2,8 +2,8 @@
 
 by Derek Huang
 
-###### last updated on: 11-02-2018  
-###### file created on: 08-29-2018
+_last updated on: 11-02-2018_  
+_file created on: 08-29-2018_
 
 This directory will contain C source and header files that implement useful functions and data structures that are not part of the standard core C library. Credit is attributed as appropriate.
 
