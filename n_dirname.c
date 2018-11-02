@@ -73,7 +73,7 @@ char *get_dir_name(char *p, unsigned int f) {
     }
     // else print error and exit
     else {
-	fprintf(stderr, "%s: get_dir_name: fatal error: unknown uint flag %u.\n", PROGNAME, F);
+	fprintf(stderr, "%s: get_dir_name: fatal error: unknown uint flag %u.\n", PROGNAME, f);
 	exit(2);
     }
     return NULL;
