@@ -45,6 +45,7 @@ struct h_table {
 }
 typedef struct h_table h_table;
 
+h_table *new_h_table(int s);
 int hfunc(char *s, int siz);
 void h_table_insert(h_table *ht, char *s);
 int h_table_nsearch(h_table *ht, char *s);
