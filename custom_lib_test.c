@@ -40,7 +40,44 @@ int main(int argc, char **argv) {
     // run normally if there are no arguments
     /*** TESTING AREA ***/
     if (argc == 1) {
-
+	// add ten elements
+	int n = 10;
+	// get d_array
+	d_array *da = d_array__new(AUTO_SIZ, sizeof(int));
+	// print (max) size of each element
+	printf("size of element in d_array at %p: %u\n", da, da->e_siz);
+	int i;
+	// append n elements
+	for (i = 0; i < n; i++) {
+	    d_array__append(da, &i, sizeof(i));
+	}
+	// print all elements
+	for (i = 0; i < n; i++) {
+	    printf("%d ", *(((int *) da->a) + i));
+	}
+	printf("\n");
+	// insert n + 4 elements, all are 0
+	for (i = 1; i < n + 4; i++) {
+	    int k = 444;
+	    d_array__insert(da, &k, sizeof(k), i);
+	}
+	// print all elements after insert
+	for (i = 0; i < da->siz; i++) {
+	    printf("%d ", *(((int *) da->a) + i));
+	}
+	// mix type (4 bytes)
+	char *s = "poo";
+	// append string (plus null)
+	d_array__append(da, s, strlen(s) + 1);
+	// redefine as much bigger string (take advantage of fact that pointers are
+	// 32 bits for mingw-pe32)
+	s = "\"this is a really large string my guy\"";
+	// append char * (4 bytes)
+	d_array__append(da, &s, sizeof(s));
+        // print original string and current string (through pointer)
+	printf("%s %s\n", ((char *) da->a) + (da->siz - 2) * da->e_siz, *((char **) ((char *) da->a + (da->siz - 1) * da->e_siz)));
+	// free memory
+	d_array__free(da);
     }
     // else if there is one argument
     else if (argc == 2) {
