@@ -43,7 +43,7 @@
 d_array *d_array__new(size_t n, size_t e) {
     // if n < 1, print error and exit
     if (n < 1) {
-	fprintf(stderr, "%s: no. elements must be positive\n", D_ARRAY__NEW_N);
+	fprintf(stderr, "%s: number of starting elements must be positive\n", D_ARRAY__NEW_N);
 	exit(1);
     }
     // if e < 1, print error and exit
@@ -72,12 +72,12 @@ d_array *d_array__new(size_t n, size_t e) {
     // return pointer
     return da;
 }
-// inserts an item of size e into the d_array struct at index i. one cannot insert items
+// inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
 // to an index less than 0 or greater than da->siz - 1, and element e must have a size
 // in bytes equal to or less than da->e_siz for a legal insertion. cannot insert NULL.
 // note that this function allows type mixing in the d_array, but for your sanity, this
 // is probably not a good idea for you to do unless you have a VERY good reason.
-void d_array__insert(d_array *da, void *e, size_t i) {
+void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
 	fprintf(stderr, "%s: cannot insert element into null d_array\n", D_ARRAY__INSERT_N);
@@ -89,8 +89,8 @@ void d_array__insert(d_array *da, void *e, size_t i) {
 		D_ARRAY__INSERT_N, da);
 	exit(1);
     }
-    // if sizeof(*e) > da->e_siz, print error and exit
-    if (sizeof(*e) > da->e_siz) {
+    // if e_siz > da->e_siz, print error and exit
+    if (e_siz > da->e_siz) {
 	fprintf(stderr, "%s: element at %p too large to insert into d_array at %p",
 		D_ARRAY__INSERT_N, e, da);
 	exit(1);
@@ -104,13 +104,13 @@ void d_array__insert(d_array *da, void *e, size_t i) {
     }
     // insert element e at index i in da->a (i < da->siz)
     // counter, record size of da->a (da->siz) and da->e_siz
-    size_t c, n, e_siz;
+    size_t c, n, e_siz_max;
     n = da->siz;
-    e_siz = da->e_siz;
+    e_siz_max = da->e_siz;
     // if da->siz == da->max_siz, double array size
     if (n == da->max_siz) {
 	da->max_siz *= 2;
-	da->a = realloc(da->a, da->max_siz * e_siz);
+	da->a = realloc(da->a, da->max_siz * e_siz_max);
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
 	    fprintf(stderr, "%s: realloc failure inserting element at %p into d_array at %p\n",
@@ -127,17 +127,17 @@ void d_array__insert(d_array *da, void *e, size_t i) {
     ++da->siz;
     // for each element i to da->siz - 1, shift them to the right by 1
     for (c = n - 1; c >= i; c--) {
-	// copy element e_siz bytes at c to c + 1
-	memcpy((c + 1) * e_siz + ca, c * e_siz + ca, e_siz);
+	// copy element e_siz_max bytes at c to c + 1
+	memcpy((c + 1) * e_siz_max + ca, c * e_siz_max + ca, e_siz_max);
     }
-    // insert element *e at i
-    memcpy(i * e_siz + ca, e, sizeof(*e));
+    // insert e_siz bytes from e  at i
+    memcpy(i * e_siz_max + ca, e, e_siz);
 }
-// for d_array da, appends an item to da->a at index da->siz, and then increments da->siz.
-// note that unlike d_array__insert(), an element can be added outside the bounds of da->a
-// as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive. like
+// for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
+// da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
+// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive. like
 // d_array__insert(), also allows type mixing, although not recommended.
-void d_array__append(d_array *da, void *e) {
+void d_array__append(d_array *da, void *e, size_t e_siz) {
     // if da is NULL, print error and exit
     if (da == NULL) {
 	fprintf(stderr, "%s: cannot append element onto null d_array\n", D_ARRAY__APPEND_N);
@@ -149,8 +149,8 @@ void d_array__append(d_array *da, void *e) {
 		D_ARRAY__APPEND_N, da);
 	exit(1);
     }
-    // if sizeof(*e) > da->e_siz, print error and exit
-    if (sizeof(*e) > da->e_siz) {
+    // if e_siz > da->e_siz, print error and exit
+    if (e_siz > da->e_siz) {
 	fprintf(stderr, "%s: element at %p too large to append to d_array at %p",
 		D_ARRAY__APPEND_N, e, da);
 	exit(1);
@@ -162,7 +162,7 @@ void d_array__append(d_array *da, void *e) {
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
 	    fprintf(stderr, "%s: realloc failure appending element at %p onto d_array at %p\n",
-		    D_ARRAY__INSERT_N, da, e);
+		    D_ARRAY__APPEND_N, da, e);
 	    exit(2);
 	}
     }
@@ -170,8 +170,8 @@ void d_array__append(d_array *da, void *e) {
     char *ca = (char *) da->a;
     // increment da->siz
     ++da->siz;
-    // append element at indez da->siz - 1
-    memcpy((da->siz - 1) * da->e_siz + ca, e, sizeof(*e));
+    // append element at index da->siz - 1 (we incremented already)
+    memcpy((da->siz - 1) * da->e_siz + ca, e, e_siz);
 }
 
 

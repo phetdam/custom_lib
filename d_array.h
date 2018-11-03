@@ -43,17 +43,17 @@ typedef struct d_array d_array;
 // n is the starting number of elements in the array, and e is the max size of each
 // element in the array (in bytes). n and e must be positive.
 d_array *d_array__new(size_t n, size_t e);
-// inserts an item of size e into the d_array struct at index i. one cannot insert items
+// inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
 // to an index less than 0 or greater than da->siz - 1, and element e must have a size
 // in bytes equal to or less than da->e_siz for a legal insertion. cannot insert NULL.
 // note that this function allows type mixing in the d_array, but for your sanity, this
 // is probably not a good idea for you to do unless you have a VERY good reason.
-void d_array__insert(d_array *da, void *e, size_t i);
-// for d_array da, appends an item to da->a at index da->siz, and then increments da->siz.
-// note that unlike d_array__insert(), an element can be added outside the bounds of da->a
-// as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive. like
+void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i);
+// for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
+// da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
+// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive. like
 // d_array__insert(), also allows type mixing, although not recommended.
-void d_array__append(d_array *da, void *e);
+void d_array__append(d_array *da, void *e, size_t e_siz);
 // frees a d_array struct
 void d_array__free(d_array *da);
 
