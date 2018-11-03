@@ -42,7 +42,7 @@ D_ARRAY_T = d_array
 # custom_lib_test target
 CUSTOM_LIB_TEST_T = custom_lib_test
 # dependencies for custom_lib_test
-CUSTOM_LIB_TEST_DEPS = $(D_ARRAY_T).c $(D_ARRAY_T).h
+CUSTOM_LIB_TEST_DEPS = $(D_ARRAY_T).o
 
 # dummy target
 dummy:
