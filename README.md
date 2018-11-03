@@ -2,7 +2,7 @@
 
 by Derek Huang
 
-_last updated on: 11-02-2018_  
+_last updated on: 11-03-2018_  
 _file created on: 08-29-2018_
 
 This directory will contain C source and header files that implement useful functions and data structures that are not part of the standard core C library. Credit is attributed as appropriate.
@@ -12,6 +12,21 @@ Most used for my own purposes; it'd be much easier to import these bad boys in t
 Also what I really hate about markdown: line breaks are created by putting __two spaces__ after a line of text. So it's very difficult to tell visually where the line break is...
 
 ## Function/struct declarations
+
+##### d_array.c, d_array.h:
+
+```c
+struct d_array {
+    void *a;
+    size_t e_siz, siz, max_siz;
+};
+typedef struct d_array d_array;
+
+d_array *d_array__new(size_t n, size_t e);
+void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i);
+void d_array__append(d_array *da, void *e, size_t e_siz);
+void d_array__free(d_array *da);
+```
 
 ##### stats.c, stats.h:
 
