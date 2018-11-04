@@ -11,18 +11,25 @@
  *
  * sample usage:
  *
- * typedef long long ll;
- * d_array *da = d_array__new(10, sizeof(ll));
+ * int n;
+ * n = 10;
+ * d_array *da = d_array__new((size_t) n, sizeof(int));
  * int i;
  * for (i = 0; i < da->siz; i++) {
- *     *((11 *) da->a + i) = i;
+ *     d_array__append(da, &i, sizeof(i));
  * }
  * for (; (i - da->siz) < da->siz; i++) {
- *     
+ *     int k;
+ *     k = 444;
+ *     d_array__insert(da, &k, sizeof(k), i);
  * }
- * 
+ * d_array__free(da);
  *
  * Changelog:
+ *
+ * 11-04-2018
+ *
+ * fixed missing newline in one of the error messages, and updated sample usage
  *
  * 11-02-2018
  *
@@ -91,7 +98,7 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     }
     // if e_siz > da->e_siz, print error and exit
     if (e_siz > da->e_siz) {
-	fprintf(stderr, "%s: element at %p too large to insert into d_array at %p",
+	fprintf(stderr, "%s: element at %p too large to insert into d_array at %p\n",
 		D_ARRAY__INSERT_N, e, da);
 	exit(1);
     }
@@ -151,7 +158,7 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
     }
     // if e_siz > da->e_siz, print error and exit
     if (e_siz > da->e_siz) {
-	fprintf(stderr, "%s: element at %p too large to append to d_array at %p",
+	fprintf(stderr, "%s: element at %p too large to append to d_array at %p\n",
 		D_ARRAY__APPEND_N, e, da);
 	exit(1);
     }
