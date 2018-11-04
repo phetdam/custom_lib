@@ -35,7 +35,7 @@
 #define CUR_TEST "d_array"
 // help string
 #define HELP_STR "Usage: " PROGNAME " [ " HELP_FLAG " ]\n"\
-    "drive program to test any features in custom_lib.\n\n"\
+    "driver program to test any features in custom_lib.\n\n"\
     "current package being tested: " CUR_TEST
 
 // driver program to test any features in the custom_lib
