@@ -5,7 +5,7 @@
 # 11-03-2018
 #
 # renamed main target and associated variables to custom_lib_test. added a list
-# of dependencies for the target
+# of dependencies for the target and abbreviated target name for custom_lib_test
 #
 # 11-02-2018
 #
@@ -46,6 +46,9 @@ CUSTOM_LIB_TEST_DEPS = $(D_ARRAY_T).o
 
 # dummy target
 dummy:
+
+# shorter way to refer to target $(CUSTOM_LIB_TEST_T)
+test: $(CUSTOM_LIB_TEST_T)
 
 # creating the main test driver; update dependencies depending on test
 $(CUSTOM_LIB_TEST_T): $(CUSTOM_LIB_TEST_T).c $(CUSTOM_LIB_TEST_DEPS)
