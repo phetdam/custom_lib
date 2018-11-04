@@ -75,7 +75,8 @@ int main(int argc, char **argv) {
 	// append char * (4 bytes)
 	d_array__append(da, &s, sizeof(s));
         // print original string and current string (through pointer)
-	printf("%s %s\n", ((char *) da->a) + (da->siz - 2) * da->e_siz, *((char **) ((char *) da->a + (da->siz - 1) * da->e_siz)));
+	printf("%s %s\n", ((char *) da->a) + (da->siz - 2) * da->e_siz,
+	       *((char **) ((char *) da->a + (da->siz - 1) * da->e_siz)));
 	// free memory
 	d_array__free(da);
     }
