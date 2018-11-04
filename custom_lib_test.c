@@ -5,10 +5,14 @@
  *
  * Changelog:
  *
+ * 11-04-2018
+ *
+ * fixed some spelling errors, and double-checked the type-mixing demo
+ *
  * 11-03-2018
  *
  * name of file changed to custom_lib_test.c, with additional macros for help string,
- * program name, curretn package being tested, help flag and string added. main body 
+ * program name, current package being tested, help flag and string added. main body 
  * rewritten to test d_array package and to incorporate macros.
  *
  * ??-??-2018
@@ -53,7 +57,7 @@ int main(int argc, char **argv) {
 	}
 	// print all elements
 	for (i = 0; i < n; i++) {
-	    printf("%d ", *(((int *) da->a) + i));
+	    printf("%d ", *((int *) da->a + i));
 	}
 	printf("\n");
 	// insert n + 4 elements, all are 0
@@ -63,7 +67,7 @@ int main(int argc, char **argv) {
 	}
 	// print all elements after insert
 	for (i = 0; i < da->siz; i++) {
-	    printf("%d ", *(((int *) da->a) + i));
+	    printf("%d ", *((int *) da->a + i));
 	}
 	// mix type (4 bytes)
 	char *s = "poo";
