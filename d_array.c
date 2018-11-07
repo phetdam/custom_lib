@@ -88,11 +88,17 @@ d_array *d_array__new(size_t n, size_t e) {
 // inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
 // to an index less than 0 or greater than da->siz - 1, and element e must have a size
 // in bytes equal to da->e_siz for a legal insertion. cannot insert NULL.
-// please do not try and mix types, for your own sanity. sign extends smaller data types.
+// please do not try and mix types, for your own sanity. 
 void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
 	fprintf(stderr, "%s: cannot insert element into null d_array\n", D_ARRAY__INSERT_N);
+	exit(1);
+    }
+    // if e is NULL, print error and exit
+    if (e == NULL) {
+	fprintf(stderr, "%s: cannot insert null element into d_array at %p\n",
+		D_ARRAY__INSERT_N, da);
 	exit(1);
     }
     // if e_siz != da->e_siz, print error and exit
