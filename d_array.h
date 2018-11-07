@@ -3,13 +3,18 @@
  *
  * C implementation of what would be the equivalent of a Java ArrayList, except of
  * course C does not have generics so everything is based off of void * and pointer
- * typecasting. unfortunate. please cast pointer appropriately before dereferencing,
- * although the design of d_array makes it possible to mix types within the array 
- * as long as they are less than or equal to the specified element size, it is not
- * recommended to abuse the d_array design in this manner.
+ * typecasting. unfortunate. to avoid endianness issues, data access methods only
+ * accept input of the same size as defined in the d_array; you will have to do
+ * sign extensions manually if you wish to insert a smaller element into a d_array
+ * with a larger element size.
  * header file that contains declarations for functions, macros, and the struct.
  *
  * Changelog:
+ *
+ * 11-07-2018
+ *
+ * edited comments for the file and header to reflect removal of ability to mix types,
+ * both for the sake of ease of use and to prevent endianness issues.
  *
  * 11-02-2018
  *
@@ -45,14 +50,13 @@ typedef struct d_array d_array;
 d_array *d_array__new(size_t n, size_t e);
 // inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
 // to an index less than 0 or greater than da->siz - 1, and element e must have a size
-// in bytes equal to or less than da->e_siz for a legal insertion. cannot insert NULL.
-// note that this function allows type mixing in the d_array, but for your sanity, this
-// is probably not a good idea for you to do unless you have a VERY good reason.
+// in bytes equal to da->e_siz for a legal insertion. cannot insert NULL.
+// please do not try and mix types, for your own sanity. 
 void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i);
 // for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
 // da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
-// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive. like
-// d_array__insert(), also allows type mixing, although not recommended.
+// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive.
+// trying to mix types is not recommended.
 void d_array__append(d_array *da, void *e, size_t e_siz);
 // frees a d_array struct
 void d_array__free(d_array *da);
