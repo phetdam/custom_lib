@@ -14,7 +14,8 @@
  * 11-07-2018
  *
  * edited comments for the file and header to reflect removal of ability to mix types,
- * both for the sake of ease of use and to prevent endianness issues.
+ * both for the sake of ease of use and to prevent endianness issues. added macro, 
+ * comments, and function declaration for d_array__remove().
  *
  * 11-02-2018
  *
@@ -35,6 +36,7 @@
 #define D_ARRAY__FREE_N "d_array__free"
 #define D_ARRAY__INSERT_N "d_array__insert"
 #define D_ARRAY__APPEND_N "d_array__append"
+#define D_ARRAY__REMOVE_N "d_array__remove"
 // struct for dynamic array
 struct d_array {
     // point to an element (to serve as an array)
@@ -58,6 +60,11 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i);
 // of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive.
 // trying to mix types is not recommended.
 void d_array__append(d_array *da, void *e, size_t e_siz);
+// for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
+// decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
+// an attempt to remove an element will cause and error and halt execution. does not zero
+// the former last element of the d_array upon removal of an element.
+void d_array__remove(d_array *da, size_t i);
 // frees a d_array struct
 void d_array__free(d_array *da);
 
