@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 	for (i = 0; i < da->siz; i++) {
 	    printf("%d ", *((int *) da->a + i));
 	}
-	// mix type (4 bytes)
+	// mix type (4 bytes) DON'T DO THIS PLEASE
 	char *s = "poo";
 	// append string (plus null)
 	d_array__append(da, s, strlen(s) + 1);
