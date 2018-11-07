@@ -31,7 +31,9 @@
  *
  * 11-07-2018
  *
- * removed ability to mix types. simpler to use, less room for error. 
+ * removed ability to mix types. simpler to use, less room for error. decided to work
+ * on d_array__remove() instead of studying for exam. corrected accidental swapping
+ * of pointer to element and pointer to d_array in realloc failure messages.
  *
  * 11-04-2018
  *
@@ -85,6 +87,7 @@ d_array *d_array__new(size_t n, size_t e) {
     // return pointer
     return da;
 }
+
 // inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
 // to an index less than 0 or greater than da->siz - 1, and element e must have a size
 // in bytes equal to da->e_siz for a legal insertion. cannot insert NULL.
@@ -125,7 +128,7 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
 	    fprintf(stderr, "%s: realloc failure inserting element at %p into d_array at %p\n",
-		    D_ARRAY__INSERT_N, da, e);
+		    D_ARRAY__INSERT_N, e, da);
 	    exit(2);
 	}
     }
@@ -144,6 +147,7 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     // insert e_siz bytes from e at i
     memcpy(i * e_siz + ca, e, e_siz);
 }
+
 // for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
 // da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
 // of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive.
@@ -173,7 +177,7 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
 	    fprintf(stderr, "%s: realloc failure appending element at %p onto d_array at %p\n",
-		    D_ARRAY__APPEND_N, da, e);
+		    D_ARRAY__APPEND_N, e, da);
 	    exit(2);
 	}
     }
@@ -185,9 +189,52 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
     memcpy((da->siz - 1) * da->e_siz + ca, e, e_siz);
 }
 
-
-
-
+// for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
+// decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
+// an attempt to remove an element will cause and error and halt execution. does not zero
+// the former last element of the d_array upon removal of an element.
+void d_array__remove(d_array *da, size_t i) {
+    // if da is NULL, print error and exit
+    if (da == NULL) {
+	fprintf(stderr, "%s: cannot remove element from  null d_array\n", D_ARRAY__REMOVE_N);
+	exit(1);
+    }
+    // if da->siz == 0, print error and exit
+    if (da->siz == 0) {
+	fprintf(stderr, "%s: cannot remove element from empty d_array at %p\n", D_ARRAY__REMOVE_N, da);
+	exit(1);
+    }
+    // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
+    // to explicitly test for negative values thanks to two's complement as da->siz - 1 >= 0)
+    if (i > da->siz - 1) {
+	fprintf(stderr, "%s: cannot remove element from outside defined array bounds of d_array at %p\n",
+		D_ARRAY__REMOVE_N, da);
+	exit(1);
+    }
+    // loop counter, size of element (da->e_siz)
+    size_t c, e_siz;
+    // convert da->a to char *
+    char *ca = (char *) da->a;
+    // get size of element
+    e_siz = da->e_siz;
+    // for all elements i to da->siz - 2, copy the next element i + 1 to i
+    for (c = i; c < da->siz - 1; c++) {
+	memcpy(i * e_siz + ca, (i + 1) * e_siz + ca, e_siz);
+    }
+    // decrement da->siz
+    --da->siz;
+    // if da->siz <= da->max_siz / 4, halve array size
+    if (da->siz <= da->max_siz / 4) {
+	da->max_siz /= 2;
+	da->a = realloc(da->a, da->max_siz * e_siz);
+	// if da->a is NULL, print error and exit
+	if (da->a == NULL) {
+	    fprintf(stderr, "%s: realloc failure halving size of d_array at %p\n",
+		    D_ARRAY__APPEND_N, da);
+	    exit(2);
+	}
+    }
+}
 
 
 
