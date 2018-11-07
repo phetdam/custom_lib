@@ -3,29 +3,35 @@
  *
  * C implementation of what would be the equivalent of a Java ArrayList, except of
  * course C does not have generics so everything is based off of void * and pointer
- * typecasting. unfortunate. please cast pointer appropriately before dereferencing,
- * although the design of d_array makes it possible to mix types within the array 
- * as long as they are less than or equal to the specified element size, it is not
- * recommended to abuse the d_array design in this manner.
+ * typecasting. unfortunate. to avoid endianness issues, data access methods only
+ * accept input of the same size as defined in the d_array; you will have to do
+ * sign extensions manually if you wish to insert a smaller element into a d_array
+ * with a larger element size.
  * source file that contains function definitions.
  *
  * sample usage:
  *
  * int n;
  * n = 10;
- * d_array *da = d_array__new((size_t) n, sizeof(int));
+ * d_array *da = d_array__new(n, sizeof(int));
  * int i;
  * for (i = 0; i < da->siz; i++) {
  *     d_array__append(da, &i, sizeof(i));
  * }
  * for (; (i - da->siz) < da->siz; i++) {
+ *     short int j;
+ *     j = 444;
  *     int k;
- *     k = 444;
+ *     k = (int) j;
  *     d_array__insert(da, &k, sizeof(k), i);
  * }
  * d_array__free(da);
  *
  * Changelog:
+ *
+ * 11-07-2018
+ *
+ * removed ability to mix types. simpler to use, less room for error. 
  *
  * 11-04-2018
  *
@@ -81,25 +87,18 @@ d_array *d_array__new(size_t n, size_t e) {
 }
 // inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
 // to an index less than 0 or greater than da->siz - 1, and element e must have a size
-// in bytes equal to or less than da->e_siz for a legal insertion. cannot insert NULL.
-// note that this function allows type mixing in the d_array, but for your sanity, this
-// is probably not a good idea for you to do unless you have a VERY good reason.
+// in bytes equal to da->e_siz for a legal insertion. cannot insert NULL.
+// please do not try and mix types, for your own sanity. sign extends smaller data types.
 void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
 	fprintf(stderr, "%s: cannot insert element into null d_array\n", D_ARRAY__INSERT_N);
 	exit(1);
     }
-    // if e is NULL, print error and exit
-    if (e == NULL) {
-	fprintf(stderr, "%s: cannot insert null element into d_array at %p\n",
-		D_ARRAY__INSERT_N, da);
-	exit(1);
-    }
-    // if e_siz > da->e_siz, print error and exit
+    // if e_siz != da->e_siz, print error and exit
     if (e_siz > da->e_siz) {
-	fprintf(stderr, "%s: element at %p too large to insert into d_array at %p\n",
-		D_ARRAY__INSERT_N, e, da);
+	fprintf(stderr, "%s: element at %p does not equal defined element size (%d) of "
+		"d_array at %p\n", D_ARRAY__INSERT_N, e, da->e_siz, da);
 	exit(1);
     }
     // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
@@ -110,14 +109,13 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
 	exit(1);
     }
     // insert element e at index i in da->a (i < da->siz)
-    // counter, record size of da->a (da->siz) and da->e_siz
-    size_t c, n, e_siz_max;
+    // counter, record size of da->a (da->siz)
+    size_t c, n;
     n = da->siz;
-    e_siz_max = da->e_siz;
     // if da->siz == da->max_siz, double array size
     if (n == da->max_siz) {
 	da->max_siz *= 2;
-	da->a = realloc(da->a, da->max_siz * e_siz_max);
+	da->a = realloc(da->a, da->max_siz * e_siz);
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
 	    fprintf(stderr, "%s: realloc failure inserting element at %p into d_array at %p\n",
@@ -134,16 +132,16 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     ++da->siz;
     // for each element i to da->siz - 1, shift them to the right by 1
     for (c = n - 1; c >= i; c--) {
-	// copy element e_siz_max bytes at c to c + 1
-	memcpy((c + 1) * e_siz_max + ca, c * e_siz_max + ca, e_siz_max);
+	// copy element e_siz bytes at c to c + 1
+	memcpy((c + 1) * e_siz + ca, c * e_siz + ca, e_siz);
     }
-    // insert e_siz bytes from e  at i
-    memcpy(i * e_siz_max + ca, e, e_siz);
+    // insert e_siz bytes from e at i
+    memcpy(i * e_siz + ca, e, e_siz);
 }
 // for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
 // da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
-// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive. like
-// d_array__insert(), also allows type mixing, although not recommended.
+// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive.
+// trying to mix types is not recommended.
 void d_array__append(d_array *da, void *e, size_t e_siz) {
     // if da is NULL, print error and exit
     if (da == NULL) {
@@ -156,10 +154,10 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
 		D_ARRAY__APPEND_N, da);
 	exit(1);
     }
-    // if e_siz > da->e_siz, print error and exit
-    if (e_siz > da->e_siz) {
-	fprintf(stderr, "%s: element at %p too large to append to d_array at %p\n",
-		D_ARRAY__APPEND_N, e, da);
+    // if e_siz != da->e_siz, print error and exit
+    if (e_siz != da->e_siz) {
+	fprintf(stderr, "%s: element at %p does not equal defined element size (%d) of "
+		"d_array at %p\n", D_ARRAY__APPEND_N, e, da->e_siz, da);
 	exit(1);
     }
     // if da->siz == da->max_siz, double array size
