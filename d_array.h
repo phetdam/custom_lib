@@ -11,6 +11,12 @@
  *
  * Changelog:
  *
+ * 11-10-2018
+ *
+ * added macros and function declarations for d_array__get and d_array__getcpy. 
+ * changed function declarations for d_array__insert and append. updated comments 
+ * for declaration of d_array__new.
+ *
  * 11-07-2018
  *
  * edited comments for the file and header to reflect removal of ability to mix types,
@@ -37,6 +43,8 @@
 #define D_ARRAY__INSERT_N "d_array__insert"
 #define D_ARRAY__APPEND_N "d_array__append"
 #define D_ARRAY__REMOVE_N "d_array__remove"
+#define D_ARRAY__GET_N "d_array__get"
+#define D_ARRAY__GETCPY_N "d_array__getcpy"
 // struct for dynamic array
 struct d_array {
     // point to an element (to serve as an array)
@@ -46,25 +54,28 @@ struct d_array {
     size_t e_siz, siz, max_siz;
 };
 typedef struct d_array d_array;
-// creates a new d_array; if AUTO_SIZ is given then starting size is 20 by default
-// n is the starting number of elements in the array, and e is the max size of each
+// creates a new d_array; if DEFAULT_SIZ is given then number of elements before resize
+// is 10 by default, while with AUTO_SIZ the number will be 1, similar to Java's ArrayList.
+// n is the no. elements tha can be added before a resize is needed, e is the size of each
 // element in the array (in bytes). n and e must be positive.
 d_array *d_array__new(size_t n, size_t e);
-// inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
-// to an index less than 0 or greater than da->siz - 1, and element e must have a size
-// in bytes equal to da->e_siz for a legal insertion. cannot insert NULL.
+// inserts an item e of size da->e_siz into the d_array struct at index i. one cannot
+// insert to an index less than 0 or greater than da->siz - 1. cannot insert NULL.
 // please do not try and mix types, for your own sanity. 
-void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i);
-// for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
-// da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
-// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive.
-// trying to mix types is not recommended.
-void d_array__append(d_array *da, void *e, size_t e_siz);
+void d_array__insert(d_array *da, void *e, size_t i);
+// for d_array da, appends an item size da->e_siz to da->a at index da->siz, and then
+// increments da->siz. trying to mix types is not recommended.
+void d_array__append(d_array *da, void *e);
 // for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
 // decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
 // an attempt to remove an element will cause and error and halt execution. does not zero
 // the former last element of the d_array upon removal of an element.
 void d_array__remove(d_array *da, size_t i);
+// returns a void * to the element in d_array da located at index i
+void *d_array__get(d_array *da, size_t i);
+// for an element located at address p, for d_array da, the ith element of da will be
+// written directly to the address at p.
+void d_array__getcpy(void *p, d_array *da, size_t i);
 // frees a d_array struct
 void d_array__free(d_array *da);
 
