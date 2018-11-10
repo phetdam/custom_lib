@@ -15,19 +15,41 @@
  * n = 10;
  * d_array *da = d_array__new(n, sizeof(int));
  * int i;
+ * for (i = 0; i < n; i++) {
+ *     d_array__append(da, &i);
+ * }
+ * int j;
+ * j = 444;
+ * for (i = 0; i < n; i++) {
+ *     d_array__insert(da, &j, n - 1);
+ * }
  * for (i = 0; i < da->siz; i++) {
- *     d_array__append(da, &i, sizeof(i));
+ *     printf("%d", *((int *) d_array__get(da, i)));
+ *     if (i < da->siz - 1) { printf(" "); }
  * }
- * for (; (i - da->siz) < da->siz; i++) {
- *     short int j;
- *     j = 444;
- *     int k;
- *     k = (int) j;
- *     d_array__insert(da, &k, sizeof(k), i);
+ * printf("\n");
+ * for (i = 0; i < n; i++) {
+ *     d_array__remove(da, n / 2);
  * }
+ * for (i = 0; i < da->siz; i++) {
+ *     d_array__getcpy(&j, da, i);
+ *     printf("%d", j);
+ *     if (i < da->siz - 1) { printf(" "); }
+ * }
+ * printf("\n");
  * d_array__free(da);
  *
  * Changelog:
+ *
+ * 11-10-2018
+ *
+ * implemented "getter" functions, and changed the function signatures of 
+ * d_array__insert and d_array__append to remove the size requirement (which is 
+ * redundant; both the insert and append functions will attempt to read and write 
+ * da->e_siz bytes). the burden of checking operand size before calling either
+ * method is now left up to the programmer. updated sample usage, and corrected
+ * problem with d_array__remove due to confusion over the index variable. updated
+ * comments for d_array__new.
  *
  * 11-07-2018
  *
@@ -51,9 +73,9 @@
 
 #include "d_array.h"
 
-// creates a new d_array; if DEFAULT_SIZ is given then starting size is 10 by default,
-// while AUTO_SIZ will start the d_array from size 1, similar to Java's ArrayList.
-// n is the starting number of elements in the array, and e is the max size of each
+// creates a new d_array; if DEFAULT_SIZ is given then number of elements before resize
+// is 10 by default, while with AUTO_SIZ the number will be 1, similar to Java's ArrayList.
+// n is the no. elements tha can be added before a resize is needed, e is the size of each
 // element in the array (in bytes). n and e must be positive.
 d_array *d_array__new(size_t n, size_t e) {
     // if n < 1, print error and exit
@@ -88,11 +110,10 @@ d_array *d_array__new(size_t n, size_t e) {
     return da;
 }
 
-// inserts an item e of size e_siz into the d_array struct at index i. one cannot insert
-// to an index less than 0 or greater than da->siz - 1, and element e must have a size
-// in bytes equal to da->e_siz for a legal insertion. cannot insert NULL.
+// inserts an item e of size da->e_siz into the d_array struct at index i. one cannot
+// insert to an index less than 0 or greater than da->siz - 1. cannot insert NULL.
 // please do not try and mix types, for your own sanity. 
-void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
+void d_array__insert(d_array *da, void *e, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
 	fprintf(stderr, "%s: cannot insert element into null d_array\n", D_ARRAY__INSERT_N);
@@ -104,12 +125,6 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
 		D_ARRAY__INSERT_N, da);
 	exit(1);
     }
-    // if e_siz != da->e_siz, print error and exit
-    if (e_siz > da->e_siz) {
-	fprintf(stderr, "%s: element at %p does not equal defined element size (%d) of "
-		"d_array at %p\n", D_ARRAY__INSERT_N, e, da->e_siz, da);
-	exit(1);
-    }
     // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
     // to explicitly test for negative values thanks to two's complement
     if (i > da->siz - 1) {
@@ -118,9 +133,10 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
 	exit(1);
     }
     // insert element e at index i in da->a (i < da->siz)
-    // counter, record size of da->a (da->siz)
-    size_t c, n;
+    // counter, record size of da->a (da->siz), record size of element (da->e_siz)
+    size_t c, n, e_siz;
     n = da->siz;
+    e_siz = da->e_siz;
     // if da->siz == da->max_siz, double array size
     if (n == da->max_siz) {
 	da->max_siz *= 2;
@@ -148,11 +164,9 @@ void d_array__insert(d_array *da, void *e, size_t e_siz, size_t i) {
     memcpy(i * e_siz + ca, e, e_siz);
 }
 
-// for d_array da, appends an item size e_siz to da->a at index da->siz, and then increments
-// da->siz. note that unlike d_array__insert(), an element can be added outside the bounds
-// of da->a as when inserting, one can only insert in ranges 0 to da->siz - 1 inclusive.
-// trying to mix types is not recommended.
-void d_array__append(d_array *da, void *e, size_t e_siz) {
+// for d_array da, appends an item size da->e_siz to da->a at index da->siz, and then
+// increments da->siz. trying to mix types is not recommended.
+void d_array__append(d_array *da, void *e) {
     // if da is NULL, print error and exit
     if (da == NULL) {
 	fprintf(stderr, "%s: cannot append element onto null d_array\n", D_ARRAY__APPEND_N);
@@ -164,16 +178,13 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
 		D_ARRAY__APPEND_N, da);
 	exit(1);
     }
-    // if e_siz != da->e_siz, print error and exit
-    if (e_siz != da->e_siz) {
-	fprintf(stderr, "%s: element at %p does not equal defined element size (%d) of "
-		"d_array at %p\n", D_ARRAY__APPEND_N, e, da->e_siz, da);
-	exit(1);
-    }
+    // record size of element (da->e_siz)
+    size_t e_siz;
+    e_siz = da->e_siz;
     // if da->siz == da->max_siz, double array size
     if (da->siz == da->max_siz) {
 	da->max_siz *= 2;
-	da->a = realloc(da->a, da->max_siz * da->e_siz);
+	da->a = realloc(da->a, da->max_siz * e_siz);
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
 	    fprintf(stderr, "%s: realloc failure appending element at %p onto d_array at %p\n",
@@ -186,7 +197,7 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
     // increment da->siz
     ++da->siz;
     // append element at index da->siz - 1 (we incremented already)
-    memcpy((da->siz - 1) * da->e_siz + ca, e, e_siz);
+    memcpy((da->siz - 1) * e_siz + ca, e, e_siz);
 }
 
 // for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
@@ -196,7 +207,7 @@ void d_array__append(d_array *da, void *e, size_t e_siz) {
 void d_array__remove(d_array *da, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
-	fprintf(stderr, "%s: cannot remove element from  null d_array\n", D_ARRAY__REMOVE_N);
+	fprintf(stderr, "%s: cannot remove element from null d_array\n", D_ARRAY__REMOVE_N);
 	exit(1);
     }
     // if da->siz == 0, print error and exit
@@ -217,9 +228,9 @@ void d_array__remove(d_array *da, size_t i) {
     char *ca = (char *) da->a;
     // get size of element
     e_siz = da->e_siz;
-    // for all elements i to da->siz - 2, copy the next element i + 1 to i
+    // for all elements c to da->siz - 2, copy the next element c + 1 to c
     for (c = i; c < da->siz - 1; c++) {
-	memcpy(i * e_siz + ca, (i + 1) * e_siz + ca, e_siz);
+	memcpy(c * e_siz + ca, (c + 1) * e_siz + ca, e_siz);
     }
     // decrement da->siz
     --da->siz;
@@ -236,9 +247,56 @@ void d_array__remove(d_array *da, size_t i) {
     }
 }
 
+// returns a void * to the element in d_array da located at index i
+void *d_array__get(d_array *da, size_t i) {
+    // if da is NULL, print error and exit
+    if (da == NULL) {
+	fprintf(stderr, "%s: cannot return void * to element %u of null d_array\n",
+		D_ARRAY__GET_N, i);
+	exit(1);
+    }
+    // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
+    // to explicitly test for negative values thanks to two's complement
+    if (i > da->siz - 1) {
+	fprintf(stderr, "%s: cannot retrieve data outside of defined bounds of d_array at %p\n",
+		D_ARRAY__GET_N, da);
+	exit(1);
+    }
+    // cast da->a to char *
+    char *ca;
+    ca = (char *) da->a;
+    // return address of element at i
+    return (void *) (ca + i * da->e_siz);
+}
 
-
-
+// for an element located at address p, for d_array da, the ith element of da will be
+// written directly to the address at p.
+void d_array__getcpy(void *p, d_array *da, size_t i) {
+    // if p is NULL, print error and exit
+    if (p == NULL) {
+	fprintf(stderr, "%s: cannot write to null address from d_array at %p\n",
+		D_ARRAY__GETCPY_N, da);
+	exit(1);
+    }
+    // if da is NULL, print error and exit
+    if (da == NULL) {
+	fprintf(stderr, "%s: cannot write to address %p from null d_array\n",
+		D_ARRAY__GETCPY_N, p);
+	exit(1);
+    }
+    // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
+    // to explicitly test for negative values thanks to two's complement
+    if (i > da->siz - 1) {
+	fprintf(stderr, "%s: cannot retrieve data outside of defined bounds of d_array at %p\n",
+		D_ARRAY__GETCPY_N, da);
+	exit(1);
+    }
+    // cast da->a to char *
+    char *ca;
+    ca = (char *) da->a;
+    // write da->e_siz bytes from address ca + i * da->e_siz to p
+    memcpy(p, ca + i * da->e_siz, da->e_siz);
+}
 
 // frees a d_array struct
 void d_array__free(d_array *da) {
