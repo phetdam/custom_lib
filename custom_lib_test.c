@@ -5,6 +5,11 @@
  *
  * Changelog:
  *
+ * 11-10-2018
+ *
+ * test area updated to sample code given in d_array.c; updated #include of header 
+ * file to be more modular
+ *
  * 11-04-2018
  *
  * fixed some spelling errors, and double-checked the type-mixing demo
@@ -24,63 +29,59 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-// any other header files to include
-//#include "stats.h"
-#include "d_array.h"
+
+// current package being tested (update as necessary with correct header file)
+#define CUR_TEST "d_array.h"
+#include CUR_TEST
+
 // program name
 #define PROGNAME "custom_lib_test"
 // help flag
 #define HELP_FLAG "--help"
-// current package being tested (update as necessary)
-#define CUR_TEST "d_array"
+
 // help string
-#define HELP_STR "Usage: " PROGNAME " [ " HELP_FLAG " ]\n"\
-    "driver program to test any features in custom_lib.\n\n"\
-    "current package being tested: " CUR_TEST
+#define HELP_STR "Usage: " PROGNAME " [ " HELP_FLAG " ]\n" \
+    "driver program to test any features in custom_lib.\n\n" \
+    "current package being tested: " CUR_TEST "\b\b  "
+// two backspaces move the cursor back before writing whitespace to cover the .h
 
 // driver program to test any features in the custom_lib
 int main(int argc, char **argv) {
-    argv[0] = "main.exe";
     // run normally if there are no arguments
     /*** TESTING AREA ***/
     if (argc == 1) {
-	// add ten elements
-	int n = 10;
-	// get d_array
-	d_array *da = d_array__new(AUTO_SIZ, sizeof(int));
-	// print (max) size of each element
-	printf("size of element in d_array at %p: %u\n", da, da->e_siz);
+	int n;
+	n = 10;
+	// memory taken is 4 * n bytes, with 0 elements (da->siz is  0)
+	d_array *da = d_array__new(n, sizeof(int));
 	int i;
-	// append n elements
+	// append n items
 	for (i = 0; i < n; i++) {
-	    d_array__append(da, &i, sizeof(i));
+	    d_array__append(da, &i);
 	}
-	// print all elements
+	int j;
+	j = 444;
+	// insert n items at last index
 	for (i = 0; i < n; i++) {
-	    printf("%d ", *((int *) da->a + i));
+	    d_array__insert(da, &j, n - 1);
+	}
+	// print results using d_array__get()
+	for (i = 0; i < da->siz; i++) {
+	    printf("%d", *((int *) d_array__get(da, i)));
+	    if (i < da->siz - 1) { printf(" "); }
 	}
 	printf("\n");
-	// insert n + 4 elements, all are 0
-	for (i = 1; i < n + 4; i++) {
-	    int k = 444;
-	    d_array__insert(da, &k, sizeof(k), i);
+	// remove n elements from index n / 2
+	for (i = 0; i < n; i++) {
+	    d_array__remove(da, n / 2);
 	}
-	// print all elements after insert
+	// print results using d_array__getcpy()
 	for (i = 0; i < da->siz; i++) {
-	    printf("%d ", *((int *) da->a + i));
+	    d_array__getcpy(&j, da, i);
+	    printf("%d", j);
+	    if (i < da->siz - 1) { printf(" "); }
 	}
-	// mix type (4 bytes) DON'T DO THIS PLEASE
-	char *s = "poo";
-	// append string (plus null)
-	d_array__append(da, s, strlen(s) + 1);
-	// redefine as much bigger string (take advantage of fact that pointers are
-	// 32 bits for mingw-pe32)
-	s = "\"this is a really large string my guy\"";
-	// append char * (4 bytes)
-	d_array__append(da, &s, sizeof(s));
-        // print original string and current string (through pointer)
-	printf("%s %s\n", ((char *) da->a) + (da->siz - 2) * da->e_siz,
-	       *((char **) ((char *) da->a + (da->siz - 1) * da->e_siz)));
+	printf("\n");
 	// free memory
 	d_array__free(da);
     }
