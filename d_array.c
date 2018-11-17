@@ -37,9 +37,24 @@
  *     if (i < da->siz - 1) { printf(" "); }
  * }
  * printf("\n");
+ * j = 7;
+ * for (i = 0; i < n; i = i + 2) {
+ *     d_array__set(da, i, &j);
+ * }
+ * for (i = 0; i < n; i++) {
+ *     printf("%d", *((int *) d_array__get(da, i)));
+ *     if (i < da->siz - 1) { printf(" "); }
+ * }
+ * printf("\n");
  * d_array__free(da);
  *
  * Changelog:
+ *
+ * 11-16-2018
+ *
+ * updated the comments for the insert and append functions so that they make 
+ * more sense to the end user. added d_array__set, and updated sample usage 
+ * to reflect the new function.
  *
  * 11-10-2018
  *
@@ -110,9 +125,9 @@ d_array *d_array__new(size_t n, size_t e) {
     return da;
 }
 
-// inserts an item e of size da->e_siz into the d_array struct at index i. one cannot
-// insert to an index less than 0 or greater than da->siz - 1. cannot insert NULL.
-// please do not try and mix types, for your own sanity. 
+// writes da->e_siz bytes from e into the d_array struct at index i, effectively inserting
+// a new element into da. one cannot insert to an index less than 0 or greater than
+// da->siz - 1, or insert NULL. please do not try and mix types, for your own sanity.
 void d_array__insert(d_array *da, void *e, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
@@ -164,7 +179,7 @@ void d_array__insert(d_array *da, void *e, size_t i) {
     memcpy(i * e_siz + ca, e, e_siz);
 }
 
-// for d_array da, appends an item size da->e_siz to da->a at index da->siz, and then
+// for d_array da, appends an item to da->a at index da->siz, writing da->e_siz bytes from e.
 // increments da->siz. trying to mix types is not recommended.
 void d_array__append(d_array *da, void *e) {
     // if da is NULL, print error and exit
@@ -296,6 +311,35 @@ void d_array__getcpy(void *p, d_array *da, size_t i) {
     ca = (char *) da->a;
     // write da->e_siz bytes from address ca + i * da->e_siz to p
     memcpy(p, ca + i * da->e_siz, da->e_siz);
+}
+
+// for an element located at address p, for the d_array da, da->e_siz bytes from p will
+// overwrite the ith element in da.
+void d_array__set(d_array *da, size_t i, void *p) {
+    // if da is NULL, print error and exit
+    if (da == NULL) {
+	fprintf(stderr, "%s: cannot write from address %p to null d_array\n",
+		D_ARRAY__SET_N, p);
+	exit(1);
+    }
+    // if p is NULL, print error and exit
+    if (p == NULL) {
+	fprintf(stderr, "%s: cannot write from null address to d_array at %p\n",
+		D_ARRAY__SET_N, da);
+	exit(1);
+    }
+    // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
+    // to explicitly test for negative values thanks to two's complement
+    if (i > da->siz - 1) {
+	fprintf(stderr, "%s: cannot write outside of defined bounds of d_array at %p\n",
+		D_ARRAY__GETCPY_N, da);
+	exit(1);
+    }
+    // cast da->a to char *
+    char *ca;
+    ca = (char *) da->a;
+    // write da->e_siz bytes to address ca + i * da->e_siz from p
+    memcpy(ca + i * da->e_siz, p, da->e_siz);
 }
 
 // frees a d_array struct
