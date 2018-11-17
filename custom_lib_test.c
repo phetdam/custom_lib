@@ -5,6 +5,10 @@
  *
  * Changelog:
  *
+ * 11-16-2018
+ *
+ * added code in test area to reflect changes in sample code of d_array.c
+ *
  * 11-10-2018
  *
  * test area updated to sample code given in d_array.c; updated #include of header 
@@ -79,6 +83,18 @@ int main(int argc, char **argv) {
 	for (i = 0; i < da->siz; i++) {
 	    d_array__getcpy(&j, da, i);
 	    printf("%d", j);
+	    if (i < da->siz - 1) { printf(" "); }
+	}
+	printf("\n");
+	// set j to 7
+        j = 7;
+	// set every other index to some number from rand()
+	for (i = 0; i < n; i = i + 2) {
+	    d_array__set(da, i, &j);
+	}
+	// print results using d_array__get()
+	for (i = 0; i < n; i++) {
+	    printf("%d", *((int *) d_array__get(da, i)));
 	    if (i < da->siz - 1) { printf(" "); }
 	}
 	printf("\n");
