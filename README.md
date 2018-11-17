@@ -2,7 +2,7 @@
 
 by Derek Huang
 
-_last updated on: 11-10-2018_  
+_last updated on: 11-16-2018_  
 _file created on: 08-29-2018_
 
 This directory will contain C source and header files that implement useful functions and data structures that are not part of the standard core C library. Credit is attributed as appropriate.
@@ -28,6 +28,7 @@ void d_array__append(d_array *da, void *e);
 void d_array__remove(d_array *da, size_t i);
 void *d_array__get(d_array *da, size_t i);
 void d_array__getcpy(void *p, d_array *da, size_t i);
+void d_array__set(d_array *da, size_t i, void *p);
 void d_array__free(d_array *da);
 ```
 
