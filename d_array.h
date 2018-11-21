@@ -24,7 +24,8 @@
  * function pointer to d_array struct and three chars, one to be printed in between
  * elements, and the other two to be printed at the start and end of printed elements
  * respectively. added macros to specify __tostr_el__* function and sep/pr_c/ps_c
- * format to simplify the usage of d_array__new, which got 4 new parameters.
+ * format to simplify the usage of d_array__new, which got 4 new parameters. added
+ * macro format for void *
  *
  * 11-16-2018
  *
@@ -107,10 +108,11 @@ char *__tostr_el__string(const void *e);
 // macros for defining d_array type, appropriate pointer to bind to __tostr_el, and
 // correct format for separators and pre- + post- char
 #define D_ARRAY__INT sizeof(int), __tostr_el__int, ' ', '[', ']'
-#define D_ARRAY__CHAR sizeof(char), __tostr_el__char, '\0', '\0', '\0'
+#define D_ARRAY__CHAR sizeof(char), __tostr_el__char, '\0', '{', '}'
 #define D_ARRAY__LONG sizeof(long), __tostr_el__long, ' ', '[', ']'
 #define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, ' ', '[', ']'
 #define D_ARRAY__STRING sizeof(char *), __tostr_el__string, ',', '[', ']'
+#define D_ARRAY__VOIDPTR sizeof(void *), NULL, '\0', '\0', '\0'
 // macro to replace last 3 arguments of d_array__tostr so that all elements in the array
 // will be written into the string that d_array__tostr will return a char * to
 #define ALL__(_DA) _DA, 0, _DA->siz
@@ -130,7 +132,7 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei);
 // printed before the first element, and ps_c is the char printed after the last element
 // returned by d_array__toostr.
 // n and e must be positive, and _tef is optional, although then the d_array__tostr method
-// cannot be used on the d_array whose * is returned by d_array__new.
+// cannot be used on the d_array whose// is returned by d_array__new.
 // note: only call like d_array__new(some_siz, sizeof(your_type), __special_tostr_el) only
 // for user-defined types. default implementations are provided and can be accessed through
 // macros as follows: ex. int, d_array__new(some_siz, D_ARRAY__INT)
