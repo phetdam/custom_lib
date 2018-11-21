@@ -6,7 +6,11 @@
  * typecasting. unfortunate. to avoid endianness issues, data access methods only
  * accept input of the same size as defined in the d_array; you will have to do
  * sign extensions manually if you wish to insert a smaller element into a d_array
- * with a larger element size.
+ * with a larger element size. contains a generic framework for printing elements
+ * of the d_array of varying types (including user-defined types, although that
+ * requires the user to create their own function to convert a single element
+ * to a string).
+ *
  * source file that contains function definitions.
  *
  * sample usage:
@@ -53,7 +57,11 @@
  * 11-21-2018
  *
  * it's midnight (0000)! modified the insert function to prevent infinite loop when
- * inserting at index 0 due to unsigned integer overflow.
+ * inserting at index 0 due to unsigned integer overflow. added implementations of
+ * int and char versions of the __tostr_el__* family of functions. updated file info.
+ * added implementation of d_array__tostr, modified signature of d_array__new (i
+ * added 4 new parameters). todo: edit usage to better reflect changes. also it
+ * is now 0500+, not 0000. 
  *
  * 11-16-2018
  *
@@ -93,11 +101,189 @@
 
 #include "d_array.h"
 
+// writes an integer element of a d_array to a string, and returns char *
+// returns NULL in case of error
+char *__tostr_el__int(const void *e) {
+    // integer at e, length of int, copy of int at e
+    int k, l_k, c_k;
+    k = *((int *) e);
+    l_k = 0;
+    c_k = k;
+    // special cases:
+    // if k == 0, increment l_k (loop will not be triggered)
+    if (k == 0) {
+	l_k++;
+    }
+    // else if integer is negative, increment l_k and eliminate sign of c_k
+    else if (k < 0) {
+	l_k++;
+	c_k = ~c_k + 0x1;
+    }
+    // get length of integer
+    while (c_k > 0) {
+	c_k = c_k / 10;
+	l_k++;
+    }
+    // create string of length l_k
+    char *s;
+    s = (char *) malloc(l_k + 1);
+    // if s is NULL, print error and exit
+    if (s == NULL) {
+	fprintf(stderr, "%s: malloc failure for element at %p\n", __TOSTR_EL__INT_N, e);
+	exit(2);
+    }
+    // use sprintf to write int to s; if no. characters returned <= 0,
+    // return NULL
+    if (sprintf(s, "%d", k) <= 0) {
+	return NULL;
+    }
+    // write null-terminating character
+    *(s + l_k) = '\0';
+    /*
+    // debug: if k != l_k, print error
+    k = sprintf(s, "%d", k);
+    printf("(%d)\n", k);
+    if (k != l_k) { fprintf(stderr, "__tostr_el__int: size mismatch\n"); }
+    */
+    return s;
+}
+// writes a char element of a d_array to a string, and returns char *
+// returns EOF in case of error
+char *__tostr_el__char(const void *e) {
+    return (char *) e;
+}
+char *__tostr_el__long(const void *e) {
+    return NULL;
+}
+char *__tostr_el__double(const void *e) {
+    return NULL;
+}
+char *__tostr_el__string(const void *e){
+    return NULL;
+}
+
+// given a d_array * da, size_t si and ei, will write elements si to ei - 1 in string form
+// according to da's __tostr_el function, element separator sep, pre- and post-char pp, and
+// return a char * to that string.
+// must free() string later or else memory will leak. can use ALL__(d_array *da) to write
+// all the elements of da to the string that d_array__tostr will return a char * to.
+// recommended to use a sep/pp format specifing macro for both default and user-defined types.
+// ex. d_array__tostr(da, 0, da->siz) -> d_array__tostr(ALL__(da))
+char *d_array__tostr(d_array *da, size_t si, size_t ei) {
+    // if da is NULL, print error and exit
+    if (da == NULL) {
+	fprintf(stderr, "%s: cannot convert null d_array to string\n", D_ARRAY__TOSTR_N);
+	exit(1);
+    }
+    // if si > da->siz - 1, or ei > da->siz, print error and exit
+    if (si > da->siz - 1 || ei > da->siz) {
+	fprintf(stderr, "%s: cannot return elements outside of array bounds of d_array at %p\n",
+		D_ARRAY__TOSTR_N, da);
+	exit(1);
+    }
+    // char * for string, da->a cast as char *, char * to individual element string
+    char *s, *ca, *ce;
+    // max capacity of string, current pointer offset, length of string at ce
+    // current pointer offset no. bytes s needs to be offset for new write
+    size_t s_max, s_o, s_ce;
+    // offset for width of sep, pr_c, or ps_c
+    int s_spo;
+    s_spo = 0;
+    // start at BUFSIZ, trade memory for speed
+    //s_max = BUFSIZ;
+    // debug: string size 4
+    s_max = 4;
+    // offset at 0
+    s_o = 0;
+    // allocate space for buffer
+    s = (char *) malloc(s_max);
+    // cast da->a to char *
+    ca = (char *) da->a;
+    // if da->pr_c != '\0', write it to s and increment s_o
+    if (da->pr_c != '\0') {
+	*s = da->pr_c;
+	s_o++;
+    }
+    // using si as counter, while si < ei
+    while (si < ei) {
+	// get char * to string version of element at si
+	ce = da->__tostr_el((void *) (ca + si * da->e_siz));
+	// get length of ce; set to 1 if da->__tostr_el == __tostr_el__char
+	// optimization only for characters
+	if (da->__tostr_el == __tostr_el__char) {
+	    s_ce = 1;
+	}
+	else {
+	    s_ce = strlen(ce);
+	}
+	// if the separator is not '\0' and si < ei - 1, or pp is not '\0' and si == ei - 1,
+	// then set s_spo to 1
+	if ((da->sep != '\0' && si < ei - 1) || (si == ei - 1 && da->ps_c != '\0')) { s_spo = 1; }
+	// if s_max - s_o - s_spo - 1 (null char) < s_ce, not enough space: realloc
+	// we use a while loop because in case of an arbitrary length string, it can be
+	// much longer than the s_max, and we need the additional or condition
+	// s_o >= s_max - s_spo - 1 because when s_ce == 1, and s_max - s_o == 1, if
+	// s_spo == 1, then lhs will be negative and there will be unsigned overflow.
+	// the condition s_o >= s_max - s_spo - 1 is sufficient.
+	while (s_o >= s_max - 2 || s_max - s_o - s_spo - 1 < s_ce) {
+	    // double size of s_max
+	    s_max = 2 * s_max;
+	    // realloc
+	    s = (char *) realloc((void *) s, s_max);
+	    // if s is NULL, print error and exit
+	    if (s == NULL) {
+		fprintf(stderr, "%s: realloc error managing memory for d_array at %p\n",
+			D_ARRAY__TOSTR_N, da);
+		exit(2);
+	    }
+	}
+	// write s_ce characters at s + s_o, and add s_ce to s_o
+	strncpy(s + s_o, ce, s_ce);
+	s_o = s_o + s_ce;
+	// if s_spo != 0
+	if (s_spo != 0) {
+	    // if sep != '\0' and si < ei - 1, write sep
+	    if (da->sep != '\0' && si < ei - 1) {
+		*(s + s_o) = da->sep;
+	    }
+	    // else if pp != '\0;' and si == ei - 1, write pp
+	    else if (da->ps_c != '\0' && si == ei - 1) {
+		*(s + s_o) = da->ps_c;
+	    }
+	    // reset s_spo to 0
+	    s_spo = 0;
+	    // increment s_o
+	    s_o++;
+	}
+	// if address of da->__tostr_el != address of __tostr_el__char, free ce
+	if (da->__tostr_el != __tostr_el__char) {
+	    free(ce);
+	}
+	// increment si
+	si++;
+    }
+    // set s + s_o to '\0'
+    *(s + s_o) = '\0';
+    // realloc to size s_o + 1
+    s = (char *) realloc((void *) s, s_o + 1);
+    // return s
+    return s;
+}
+
 // creates a new d_array; if DEFAULT_SIZ is given then number of elements before resize
 // is 10 by default, while with AUTO_SIZ the number will be 1, similar to Java's ArrayList.
-// n is the no. elements tha can be added before a resize is needed, e is the size of each
-// element in the array (in bytes). n and e must be positive.
-d_array *d_array__new(size_t n, size_t e) {
+// n is the no. elements that can be added before a resize is needed, e is the size of each
+// element in the array (in bytes), __tef is a function that returns an element of the
+// d_array as a string, sep is the character printed between elements, pr_c is the char
+// printed before the first element, and ps_c is the char printed after the last element
+// returned by d_array__toostr.
+// n and e must be positive, and _tef is optional, although then the d_array__tostr method
+// cannot be used on the d_array whose * is returned by d_array__new.
+// note: only call like d_array__new(some_siz, sizeof(your_type), __special_tostr_el) only
+// for user-defined types. default implementations are provided and can be accessed through
+// macros as follows: ex. int, d_array__new(some_siz, D_ARRAY__INT)
+// it is recommended that user-defined __tef and sep/pp be combined into a macro
+d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), char sep, char pr_c, char ps_c) {
     // if n < 1, print error and exit
     if (n < 1) {
 	fprintf(stderr, "%s: number of starting elements must be positive\n", D_ARRAY__NEW_N);
@@ -126,6 +312,10 @@ d_array *d_array__new(size_t n, size_t e) {
     da->siz = 0;
     da->e_siz = e;
     da->max_siz = n;
+    da->__tostr_el = __tef;
+    da->sep = sep;
+    da->pr_c = pr_c;
+    da->ps_c = ps_c;
     // return pointer
     return da;
 }
