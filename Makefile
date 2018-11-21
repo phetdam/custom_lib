@@ -2,6 +2,11 @@
 #
 # Changelog:
 #
+# 11-20-2018
+#
+# added line under target test to execute custom_lib_test, and added test_info
+# target to run custom_lib_test with the --help flag
+#
 # 11-03-2018
 #
 # renamed main target and associated variables to custom_lib_test. added a list
@@ -47,8 +52,13 @@ CUSTOM_LIB_TEST_DEPS = $(D_ARRAY_T).o
 # dummy target
 dummy:
 
-# shorter way to refer to target $(CUSTOM_LIB_TEST_T)
+# shorter way to refer to target $(CUSTOM_LIB_TEST_T) and run the program
 test: $(CUSTOM_LIB_TEST_T)
+	./$(CUSTOM_LIB_TEST_T)
+
+# shorter way to refer to target $(CUSTOM_LIB_TEST_T) and run it with --help
+test_info: $(CUSTOM_LIB_TEST_T)
+	./$(CUSTOM_LIB_TEST_T) --help
 
 # creating the main test driver; update dependencies depending on test
 $(CUSTOM_LIB_TEST_T): $(CUSTOM_LIB_TEST_T).c $(CUSTOM_LIB_TEST_DEPS)
