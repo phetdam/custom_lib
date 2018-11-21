@@ -50,6 +50,11 @@
  *
  * Changelog:
  *
+ * 11-21-2018
+ *
+ * it's midnight (0000)! modified the insert function to prevent infinite loop when
+ * inserting at index 0 due to unsigned integer overflow.
+ *
  * 11-16-2018
  *
  * updated the comments for the insert and append functions so that they make 
@@ -171,7 +176,8 @@ void d_array__insert(d_array *da, void *e, size_t i) {
     // increment da->siz
     ++da->siz;
     // for each element i to da->siz - 1, shift them to the right by 1
-    for (c = n - 1; c >= i; c--) {
+    // we need the extra condition because c is unsigned
+    for (c = n - 1; c >= i && c < n; c--) {
 	// copy element e_siz bytes at c to c + 1
 	memcpy((c + 1) * e_siz + ca, c * e_siz + ca, e_siz);
     }
