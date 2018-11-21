@@ -113,7 +113,7 @@ char *__tostr_el__string(const void *e);
 #define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, ' ', '[', ']'
 #define D_ARRAY__STRING sizeof(char *), __tostr_el__string, ',', '[', ']'
 #define D_ARRAY__VOIDPTR sizeof(void *), NULL, '\0', '\0', '\0'
-// macro to replace last 3 arguments of d_array__tostr so that all elements in the array
+// macro to replace all 3 arguments of d_array__tostr so that all elements in the array
 // will be written into the string that d_array__tostr will return a char * to
 #define ALL__(_DA) _DA, 0, _DA->siz
 // given a d_array * da, size_t si and ei, will write elements si to ei - 1 in string form
