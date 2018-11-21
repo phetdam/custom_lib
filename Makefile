@@ -2,6 +2,14 @@
 #
 # Changelog:
 #
+# 11-21-2018
+#
+# added CUSTOM_LIB_TEST_DEPS under test and test_help targets so that
+# dependencies will be rebuilt will either target is run; explicitly provided
+# .o extension for object file targets. omitting the .o in the dependency lists
+# leads to make not checking if the .o files need to be rebuild, as they are
+# technically not targets.
+#
 # 11-20-2018
 #
 # added line under target test to execute custom_lib_test, and added test_info
@@ -53,11 +61,11 @@ CUSTOM_LIB_TEST_DEPS = $(D_ARRAY_T).o
 dummy:
 
 # shorter way to refer to target $(CUSTOM_LIB_TEST_T) and run the program
-test: $(CUSTOM_LIB_TEST_T)
+test: $(CUSTOM_LIB_TEST_T) $(CUSTOM_LIB_TEST_DEPS)
 	./$(CUSTOM_LIB_TEST_T)
 
 # shorter way to refer to target $(CUSTOM_LIB_TEST_T) and run it with --help
-test_info: $(CUSTOM_LIB_TEST_T)
+test_info: $(CUSTOM_LIB_TEST_T) $(CUSTOM_LIB_TEST_DEPS)
 	./$(CUSTOM_LIB_TEST_T) --help
 
 # creating the main test driver; update dependencies depending on test
@@ -65,7 +73,7 @@ $(CUSTOM_LIB_TEST_T): $(CUSTOM_LIB_TEST_T).c $(CUSTOM_LIB_TEST_DEPS)
 	$(CC) $(CFLAGS) -o $(CUSTOM_LIB_TEST_T) $(CUSTOM_LIB_TEST_T).c $(CUSTOM_LIB_TEST_DEPS)
 
 # stats package object file
-$(STATS_T): $(STATS_T).c $(STATS_T).h
+$(STATS_T).o: $(STATS_T).c $(STATS_T).h
 	$(CC) $(CFLAGS) -c $(STATS_T).c
 
 # creates the strsea executable, which uses strsea.c, strh_table.h and strh_table.c
@@ -73,11 +81,11 @@ $(STRSEA_T): $(STRSEA_T).c $(STRH_TABLE_T).o
 	$(CC) $(CFLAGS) -o $(STRSEA_T) $(STRSEA_T).c $(STRH_TABLE_T).o
 
 # strh_table.* package object file (string hash table)
-$(STRH_TABLE_T): $(STRH_TABLE_T).c $(STRH_TABLE_T).h
+$(STRH_TABLE_T).o: $(STRH_TABLE_T).c $(STRH_TABLE_T).h
 	$(CC) $(CFLAGS) -c $(STRH_TABLE_T).c
 
 # d_array package object file
-$(D_ARRAY_T): $(D_ARRAY_T).c $(D_ARRAY_T).h
+$(D_ARRAY_T).o: $(D_ARRAY_T).c $(D_ARRAY_T).h
 	$(CC) $(CFLAGS) -c $(D_ARRAY_T).c
 
 # clean autosave files from directory
