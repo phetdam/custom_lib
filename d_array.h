@@ -108,7 +108,7 @@ char *__tostr_el__string(const void *e);
 // macros for defining d_array type, appropriate pointer to bind to __tostr_el, and
 // correct format for separators and pre- + post- char
 #define D_ARRAY__INT sizeof(int), __tostr_el__int, ' ', '[', ']'
-#define D_ARRAY__CHAR sizeof(char), __tostr_el__char, '\0', '{', '}'
+#define D_ARRAY__CHAR sizeof(char), __tostr_el__char, '\0', '\0', '\0'
 #define D_ARRAY__LONG sizeof(long), __tostr_el__long, ' ', '[', ']'
 #define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, ' ', '[', ']'
 #define D_ARRAY__STRING sizeof(char *), __tostr_el__string, ',', '[', ']'
