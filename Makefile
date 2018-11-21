@@ -8,7 +8,7 @@
 # dependencies will be rebuilt will either target is run; explicitly provided
 # .o extension for object file targets. omitting the .o in the dependency lists
 # leads to make not checking if the .o files need to be rebuild, as they are
-# technically not targets.
+# technically not targets. it's also 0523 i should get to sleep
 #
 # 11-20-2018
 #
