@@ -54,14 +54,24 @@
  *
  * Changelog:
  *
+ * 11-23-2018
+ *
+ * removed problem with using d_array__tostr on a char * array; was due to accidental
+ * casting of void * in __tostr_el__char__ptr to char * instead of returning a 
+ * dereferenced char **. 
+ *
  * 11-21-2018
  *
  * it's midnight (0000)! modified the insert function to prevent infinite loop when
  * inserting at index 0 due to unsigned integer overflow. added implementations of
  * int and char versions of the __tostr_el__* family of functions. updated file info.
  * added implementation of d_array__tostr, modified signature of d_array__new (i
- * added 4 new parameters). todo: edit usage to better reflect changes. also it
- * is now 0500+, not 0000. 
+ * added 4 new parameters). also it is now 0500+, not 0000. at 1311: added if
+ * statement to check if char * returned by __tostr_el is NULL and handle error.
+ * changed s_max to BUFSIZ in d_array__tostr, and removed debug comments from 
+ * __tostr_el__int. added if statement to check if __tostr_el is NULL. prefixed the
+ * separating, pre, and post element chars with "__" to imply that they are not
+ * for the user to touch.
  *
  * 11-16-2018
  *
@@ -137,28 +147,22 @@ char *__tostr_el__int(const void *e) {
     if (sprintf(s, "%d", k) <= 0) {
 	return NULL;
     }
-    // write null-terminating character
+    // write null-terminating character and return
     *(s + l_k) = '\0';
-    /*
-    // debug: if k != l_k, print error
-    k = sprintf(s, "%d", k);
-    printf("(%d)\n", k);
-    if (k != l_k) { fprintf(stderr, "__tostr_el__int: size mismatch\n"); }
-    */
     return s;
 }
-// writes a char element of a d_array to a string, and returns char *
-// returns EOF in case of error
+// simply returns e cast to char *
 char *__tostr_el__char(const void *e) {
     return (char *) e;
+}
+// simply returns dereferenced e cast to char ** (characters already in heap)
+char *__tostr_el__char__ptr(const void *e) {
+    return *((char **) e);
 }
 char *__tostr_el__long(const void *e) {
     return NULL;
 }
 char *__tostr_el__double(const void *e) {
-    return NULL;
-}
-char *__tostr_el__string(const void *e){
     return NULL;
 }
 
@@ -181,6 +185,16 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
 		D_ARRAY__TOSTR_N, da);
 	exit(1);
     }
+    // function pointer for da->__tostr_el
+    char *(*__tostr_el)(const void *);
+    __tostr_el = da->__tostr_el;
+    // if NULL, we do not have the required function to convert each element to string,
+    // so we can only print error and exit
+    if (__tostr_el == NULL) {
+	fprintf(stderr, "%s: d_array at %p does not contain valid __tostr_el function\n",
+		D_ARRAY__TOSTR_N, da);
+	exit(1);
+    }
     // char * for string, da->a cast as char *, char * to individual element string
     char *s, *ca, *ce;
     // max capacity of string, current pointer offset, length of string at ce
@@ -190,24 +204,28 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
     int s_spo;
     s_spo = 0;
     // start at BUFSIZ, trade memory for speed
-    //s_max = BUFSIZ;
-    // debug: string size 4
-    s_max = 4;
+    s_max = BUFSIZ;
     // offset at 0
     s_o = 0;
     // allocate space for buffer
     s = (char *) malloc(s_max);
     // cast da->a to char *
     ca = (char *) da->a;
-    // if da->pr_c != '\0', write it to s and increment s_o
-    if (da->pr_c != '\0') {
-	*s = da->pr_c;
+    // if da->__pr_c != '\0', write it to s and increment s_o
+    if (da->__pr_c != '\0') {
+	*s = da->__pr_c;
 	s_o++;
     }
     // using si as counter, while si < ei
     while (si < ei) {
 	// get char * to string version of element at si
 	ce = da->__tostr_el((void *) (ca + si * da->e_siz));
+	// if ce is NULL, print error and exit
+	if (ce == NULL) {
+	    fprintf(stderr, "%s: write error with element at %p in d_array at %p\n",
+		    D_ARRAY__TOSTR_N, ca + si * da->e_siz, da);
+	    exit(2);
+	}
 	// get length of ce; set to 1 if da->__tostr_el == __tostr_el__char
 	// optimization only for characters
 	if (da->__tostr_el == __tostr_el__char) {
@@ -216,9 +234,10 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
 	else {
 	    s_ce = strlen(ce);
 	}
-	// if the separator is not '\0' and si < ei - 1, or pp is not '\0' and si == ei - 1,
+	// if __sep is not '\0' and si < ei - 1, or __ps_c is not '\0' and si == ei - 1,
 	// then set s_spo to 1
-	if ((da->sep != '\0' && si < ei - 1) || (si == ei - 1 && da->ps_c != '\0')) { s_spo = 1; }
+	if ((da->__sep != '\0' && si < ei - 1) ||
+	    (si == ei - 1 && da->__ps_c != '\0')) { s_spo = 1; }
 	// if s_max - s_o - s_spo - 1 (null char) < s_ce, not enough space: realloc
 	// we use a while loop because in case of an arbitrary length string, it can be
 	// much longer than the s_max, and we need the additional or condition
@@ -242,13 +261,13 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
 	s_o = s_o + s_ce;
 	// if s_spo != 0
 	if (s_spo != 0) {
-	    // if sep != '\0' and si < ei - 1, write sep
-	    if (da->sep != '\0' && si < ei - 1) {
-		*(s + s_o) = da->sep;
+	    // if __sep != '\0' and si < ei - 1, write __sep
+	    if (da->__sep != '\0' && si < ei - 1) {
+		*(s + s_o) = da->__sep;
 	    }
-	    // else if pp != '\0;' and si == ei - 1, write pp
-	    else if (da->ps_c != '\0' && si == ei - 1) {
-		*(s + s_o) = da->ps_c;
+	    // else if __ps_c != '\0;' and si == ei - 1, write __ps_c
+	    else if (da->__ps_c != '\0' && si == ei - 1) {
+		*(s + s_o) = da->__ps_c;
 	    }
 	    // reset s_spo to 0
 	    s_spo = 0;
@@ -269,21 +288,22 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
     // return s
     return s;
 }
-
 // creates a new d_array; if DEFAULT_SIZ is given then number of elements before resize
 // is 10 by default, while with AUTO_SIZ the number will be 1, similar to Java's ArrayList.
 // n is the no. elements that can be added before a resize is needed, e is the size of each
 // element in the array (in bytes), __tef is a function that returns an element of the
-// d_array as a string, sep is the character printed between elements, pr_c is the char
-// printed before the first element, and ps_c is the char printed after the last element
-// returned by d_array__toostr.
-// n and e must be positive, and _tef is optional, although then the d_array__tostr method
-// cannot be used on the d_array whose * is returned by d_array__new.
+// d_array as a string, *__t is a char * to a string literal determining the type of da,
+// sep is the character printed between elements, __pr_c is the char printed before the first
+// element, and __ps_c is the char printed after the last element returned by d_array__tostr.
+//
+// n and e must be positive, and __tef is optional, although then the d_array__tostr method
+// cannot be used on the d_array that has a NULL __tef (ex. void *).
 // note: only call like d_array__new(some_siz, sizeof(your_type), __special_tostr_el) only
 // for user-defined types. default implementations are provided and can be accessed through
 // macros as follows: ex. int, d_array__new(some_siz, D_ARRAY__INT)
 // it is recommended that user-defined __tef and sep/pp be combined into a macro
-d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), char sep, char pr_c, char ps_c) {
+d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), const char *__t,
+		      char __sep, char __pr_c, char __ps_c) {
     // if n < 1, print error and exit
     if (n < 1) {
 	fprintf(stderr, "%s: number of starting elements must be positive\n", D_ARRAY__NEW_N);
@@ -292,6 +312,11 @@ d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), char sep
     // if e < 1, print error and exit
     if (e < 1) {
 	fprintf(stderr, "%s: size of element must be positive\n", D_ARRAY__NEW_N);
+	exit(1);
+    }
+    // if __t is NULL, print error and exit
+    if (__t == NULL) {
+	fprintf(stderr, "%s: cannot pass NULL as a type\n", D_ARRAY__NEW_N);
 	exit(1);
     }
     // create new d_array struct
@@ -313,9 +338,10 @@ d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), char sep
     da->e_siz = e;
     da->max_siz = n;
     da->__tostr_el = __tef;
-    da->sep = sep;
-    da->pr_c = pr_c;
-    da->ps_c = ps_c;
+    da->t__ = (char *) __t;
+    da->__sep = __sep;
+    da->__pr_c = __pr_c;
+    da->__ps_c = __ps_c;
     // return pointer
     return da;
 }
@@ -404,7 +430,8 @@ void d_array__append(d_array *da, void *e) {
 	}
     }
     // convert da->a to char *
-    char *ca = (char *) da->a;
+    char *ca;
+    ca = (char *) da->a;
     // increment da->siz
     ++da->siz;
     // append element at index da->siz - 1 (we incremented already)
@@ -545,6 +572,16 @@ void d_array__free(d_array *da) {
 	fprintf(stderr, "%s: cannot free null pointer\n", D_ARRAY__FREE_N);
 	exit(1);
     }
+    // if the type of the d_array is a pointer type
+    if (*(da->t__ + strlen(da->t__) - 1) == '*') {
+	// free all of the memory pointed to by each pointer in da->a
+	size_t i;
+	i = 0;
+	while (i < da->siz) {
+	    free(da->a + i++);
+	}
+    }
+    // free da->a and da
     free(da->a);
     free(da);
 }
