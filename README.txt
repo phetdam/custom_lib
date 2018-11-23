@@ -2,14 +2,14 @@ custom_lib
 
 by Derek Huang
 
-last updated on: 11-21-2018  
+last updated on: 11-23-2018  
 file created on: 08-29-2018
 
 This directory will contain C source and header files that implement useful functions and data structures that are not part of the standard core C library. Credit is attributed as appropriate.
 
-Most used for my own purposes; it'd be much easier to import these bad boys in than implement things from scratch over and over again. These also serve as a fun programming exercise for a beginner like me.
+It is quite tedious to implement things from scratch over and over again. These also serve as a fun programming exercise for a beginner like me.
 
-Also what I really hate about markdown: line breaks are created by putting __two spaces__ after a line of text. So it's very difficult to tell visually where the line break is...
+A minor annoyance with markdown: line breaks are created by putting __two spaces__ after a line of text. So it's very difficult to tell visually where the line break is...
 
 Function/struct declarations
 
@@ -19,12 +19,14 @@ struct d_array {
     void *a;
     size_t e_siz, siz, max_siz;
     char *(*__tostr_el)(const void *);
+    char *t__;
     char sep, pr_c, ps_c;
 };
 typedef struct d_array d_array;
 
 char *d_array__tostr(d_array *da, size_t si, size_t ei);
-d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), char sep, char pr_c, char ps_c);
+d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), const char *__t,
+		      char __sep, char __pr_c, char __ps_c);
 void d_array__insert(d_array *da, void *e, size_t i);
 void d_array__append(d_array *da, void *e);
 void d_array__remove(d_array *da, size_t i);
