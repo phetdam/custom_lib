@@ -59,7 +59,9 @@
  * removed problem with using d_array__tostr on a char * array; was due to accidental
  * casting of void * in __tostr_el__char__ptr to char * instead of returning a 
  * dereferenced char **. modified free() to work properly with d_arrays that are
- * of a pointer type; will also free the memory pointed to by each element.
+ * of a pointer type; will also free the memory pointed to by each element. fixed
+ * memory error within d_array__tostr that would cause program to crash if the 
+ * function was called multiple times on a char * d_array.
  *
  * 11-21-2018
  *
@@ -220,7 +222,7 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
     // using si as counter, while si < ei
     while (si < ei) {
 	// get char * to string version of element at si
-	ce = da->__tostr_el((void *) (ca + si * da->e_siz));
+	ce = __tostr_el((void *) (ca + si * da->e_siz));
 	// if ce is NULL, print error and exit
 	if (ce == NULL) {
 	    fprintf(stderr, "%s: write error with element at %p in d_array at %p\n",
@@ -275,8 +277,9 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
 	    // increment s_o
 	    s_o++;
 	}
-	// if address of da->__tostr_el != address of __tostr_el__char, free ce
-	if (da->__tostr_el != __tostr_el__char) {
+	// if the element type is not char or char *, free ce (char or char * do
+	// not malloc extra memory)
+	if ((__tostr_el != __tostr_el__char) && (__tostr_el != __tostr_el__char__ptr)) {
 	    free(ce);
 	}
 	// increment si
