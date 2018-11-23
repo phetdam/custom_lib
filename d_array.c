@@ -61,7 +61,8 @@
  * dereferenced char **. modified free() to work properly with d_arrays that are
  * of a pointer type; will also free the memory pointed to by each element. fixed
  * memory error within d_array__tostr that would cause program to crash if the 
- * function was called multiple times on a char * d_array.
+ * function was called multiple times on a char * d_array. corrected premature 
+ * free()ing of da->a instead of individual pointers *(da->a + i).
  *
  * 11-21-2018
  *
@@ -582,7 +583,7 @@ void d_array__free(d_array *da) {
 	size_t i;
 	i = 0;
 	while (i < da->siz) {
-	    free(da->a + i++);
+	    free(*((void **) da->a + i++));
 	}
     }
     // free da->a and da
