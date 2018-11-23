@@ -15,6 +15,11 @@
  *
  * Changelog:
  *
+ * 11-23-2018
+ *
+ * added type literal for void *, and corrected macro format for void * 
+ * (D_ARRAY__VOID__PTR). updated free() to work properly with d_arrays of * type.
+ *
  * 11-21-2018
  *
  * added macros and function declarations for __tostr_el__* functions, as well as the
@@ -103,6 +108,7 @@ typedef struct d_array d_array;
 #define __DATYPE__CHAR__PTR "char *"
 #define __DATYPE__LONG "long"
 #define __DATYPE__DOUBLE "double"
+#define __DATYPE__VOID__PTR "void *"
 // declarations for default functions to pass as a d_array's __tostr_el function
 char *__tostr_el__int(const void *e);
 char *__tostr_el__char(const void *e);
@@ -122,7 +128,7 @@ char *__tostr_el__double(const void *e);
 #define D_ARRAY__CHAR__PTR sizeof(char *), __tostr_el__char__ptr, __DATYPE__CHAR__PTR, ',', '[', ']'
 #define D_ARRAY__LONG sizeof(long), __tostr_el__long, __DATYPE__LONG, ' ', '[', ']'
 #define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, __DATYPE__DOUBLE, ' ', '[', ']'
-#define D_ARRAY__VOID__PTR sizeof(void *), NULL, '\0', '\0', '\0'
+#define D_ARRAY__VOID__PTR sizeof(void *), NULL, __DATYPE__VOID__PTR '\0', '\0', '\0'
 // macro to replace all 3 arguments of d_array__tostr so that all elements in the array
 // will be written into the string that d_array__tostr will return a char * to
 #define ALL__(_DA) _DA, 0, _DA->siz
