@@ -25,7 +25,9 @@
  * elements, and the other two to be printed at the start and end of printed elements
  * respectively. added macros to specify __tostr_el__* function and sep/pr_c/ps_c
  * format to simplify the usage of d_array__new, which got 4 new parameters. added
- * macro format for void *
+ * macro format for void *, and added member in d_array struct and macros for types, as
+ * if elements are pointers the underlying memory for each must also be freed. changed
+ * name of __string* or __STRING* to __char__ptr or __CHAR__PTR. 
  *
  * 11-16-2018
  *
@@ -75,44 +77,52 @@ struct d_array {
     // size of each element in the d_array, no. elements in d_array, no. elements
     // d_array can hold (before resizing)
     size_t e_siz, siz, max_siz;
-    /**
-     * internal function pointer that the d_array will use to write an element
-     * when d_array__write is called. __tostr_el requires the following parameters
-     *
-     * const void *  const void * to an element in corresponding d_array
-     *
-     * proper casting and string formatting is left to the user for user-defined types.
-     * it is recommended to use sprintf or snprintf for this purpose.
-     * d_array package includes predefined functions for int, char, long, double, char *
-     * (string). more implementations may be added later
-     *
-     * returns char * to element as string, or NULL upon error
-     */
+    /*
+       internal function pointer that the d_array will use to write an element
+       when d_array__write is called. __tostr_el requires the following parameters
+
+       const void *  const void * to an element in corresponding d_array
+       
+       proper casting and string formatting is left to the user for user-defined types.
+       it is recommended to use sprintf or snprintf for this purpose.
+       d_array package includes predefined functions for int, char, long, double, char *
+       (string). more implementations may be added later
+       
+       returns char * to element as string, or NULL upon error 
+    */
     char *(*__tostr_el)(const void *);
+    // char * that keeps track of array's type (points to a predefined string literal)
+    char *t__;
     // char element separator, char printed before elements, char printed after elements
-    char sep, pr_c, ps_c;
+    char __sep, __pr_c, __ps_c;
 };
 typedef struct d_array d_array;
+// string literals for type declarations
+#define __DATYPE__INT "int"
+#define __DATYPE__CHAR "char"
+#define __DATYPE__CHAR__PTR "char *"
+#define __DATYPE__LONG "long"
+#define __DATYPE__DOUBLE "double"
 // declarations for default functions to pass as a d_array's __tostr_el function
 char *__tostr_el__int(const void *e);
 char *__tostr_el__char(const void *e);
+char *__tostr_el__char__ptr(const void *e);
 char *__tostr_el__long(const void *e);
 char *__tostr_el__double(const void *e);
-char *__tostr_el__string(const void *e);
 // string names for __tostr_el__* functions
 #define __TOSTR_EL__INT_N "__tostr_el__int"
 #define __TOSTR_EL__CHAR_N "__tostr_el__char"
+#define __TOSTR_EL__CHAR__PTR_N "__tostr_el__char__ptr"
 #define __TOSTR_EL__LONG_N "__tostr_el__long"
 #define __TOSTR_EL__DOUBLE_N "__tostr_el__double"
-#define __TOSTR_EL__STRING_N "__tostr_el__string"
 // macros for defining d_array type, appropriate pointer to bind to __tostr_el, and
 // correct format for separators and pre- + post- char
-#define D_ARRAY__INT sizeof(int), __tostr_el__int, ' ', '[', ']'
-#define D_ARRAY__CHAR sizeof(char), __tostr_el__char, '\0', '\0', '\0'
-#define D_ARRAY__LONG sizeof(long), __tostr_el__long, ' ', '[', ']'
-#define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, ' ', '[', ']'
-#define D_ARRAY__STRING sizeof(char *), __tostr_el__string, ',', '[', ']'
-#define D_ARRAY__VOIDPTR sizeof(void *), NULL, '\0', '\0', '\0'
+#define D_ARRAY__INT sizeof(int), __tostr_el__int, __DATYPE__INT, ' ', '[', ']'
+#define D_ARRAY__CHAR sizeof(char), __tostr_el__char, __DATYPE__CHAR, '\0', '\0', '\0'
+#define D_ARRAY__CHAR__PTR sizeof(char *), __tostr_el__char__ptr, __DATYPE__CHAR__PTR, ',', '[', ']'
+#define D_ARRAY__LONG sizeof(long), __tostr_el__long, __DATYPE__LONG, ' ', '[', ']'
+#define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, __DATYPE__DOUBLE, ' ', '[', ']'
+#define D_ARRAY__VOID__PTR sizeof(void *), NULL, '\0', '\0', '\0'
 // macro to replace all 3 arguments of d_array__tostr so that all elements in the array
 // will be written into the string that d_array__tostr will return a char * to
 #define ALL__(_DA) _DA, 0, _DA->siz
@@ -128,16 +138,18 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei);
 // is 10 by default, while with AUTO_SIZ the number will be 1, similar to Java's ArrayList.
 // n is the no. elements that can be added before a resize is needed, e is the size of each
 // element in the array (in bytes), __tef is a function that returns an element of the
-// d_array as a string, sep is the character printed between elements, pr_c is the char
-// printed before the first element, and ps_c is the char printed after the last element
-// returned by d_array__toostr.
-// n and e must be positive, and _tef is optional, although then the d_array__tostr method
-// cannot be used on the d_array whose// is returned by d_array__new.
+// d_array as a string, *__t is a char * to a string literal determining the type of da,
+// sep is the character printed between elements, __pr_c is the char printed before the first
+// element, and __ps_c is the char printed after the last element returned by d_array__tostr.
+//
+// n and e must be positive, and __tef is optional, although then the d_array__tostr method
+// cannot be used on the d_array that has a NULL __tef (ex. void *).
 // note: only call like d_array__new(some_siz, sizeof(your_type), __special_tostr_el) only
 // for user-defined types. default implementations are provided and can be accessed through
 // macros as follows: ex. int, d_array__new(some_siz, D_ARRAY__INT)
 // it is recommended that user-defined __tef and sep/pp be combined into a macro
-d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), char sep, char pr_c, char ps_c);
+d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), const char *__t,
+		      char __sep, char __pr_c, char __ps_c);
 // writes da->e_siz bytes from e into the d_array struct at index i, effectively inserting
 // a new element into da. one cannot insert to an index less than 0 or greater than
 // da->siz - 1, or insert NULL. please do not try and mix types, for your own sanity.
