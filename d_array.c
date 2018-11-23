@@ -58,7 +58,8 @@
  *
  * removed problem with using d_array__tostr on a char * array; was due to accidental
  * casting of void * in __tostr_el__char__ptr to char * instead of returning a 
- * dereferenced char **. 
+ * dereferenced char **. modified free() to work properly with d_arrays that are
+ * of a pointer type; will also free the memory pointed to by each element.
  *
  * 11-21-2018
  *
