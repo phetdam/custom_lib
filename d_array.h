@@ -18,7 +18,9 @@
  * 11-24-2018
  *
  * made note about d_array__free() freeing the underlying memory pointed to by 
- * each element of a d_array if the type of the d_array is a pointer type.
+ * each element of a d_array if the type of the d_array is a pointer type. updated
+ * comments for d_array__remove() that indicates for a d_array of pointer type, the
+ * underlying memory for the d_array will also be freed. 
  *
  * 11-23-2018
  *
@@ -172,7 +174,8 @@ void d_array__append(d_array *da, void *e);
 // for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
 // decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
 // an attempt to remove an element will cause and error and halt execution. does not zero
-// the former last element of the d_array upon removal of an element.
+// the former last element of the d_array upon removal of an element. if the d_array is a
+// pointer type, then the memory pointed to by the pointer will also be removed.
 void d_array__remove(d_array *da, size_t i);
 // returns a void * to the element in d_array da located at index i
 void *d_array__get(d_array *da, size_t i);
