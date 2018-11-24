@@ -1,5 +1,5 @@
 /**
- * d_array.c
+ * d_array.h
  *
  * C implementation of what would be the equivalent of a Java ArrayList, except of
  * course C does not have generics so everything is based off of void * and pointer
