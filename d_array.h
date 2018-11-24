@@ -15,6 +15,11 @@
  *
  * Changelog:
  *
+ * 11-24-2018
+ *
+ * made note about d_array__free() freeing the underlying memory pointed to by 
+ * each element of a d_array if the type of the d_array is a pointer type.
+ *
  * 11-23-2018
  *
  * added type literal for void *, and corrected macro format for void * 
@@ -177,7 +182,8 @@ void d_array__getcpy(void *p, d_array *da, size_t i);
 // for an element located at address p, for the d_array da, da->e_siz bytes from p will
 // overwrite the ith element in da.
 void d_array__set(d_array *da, size_t i, void *p);
-// frees a d_array struct
+// frees a d_array struct. if the d_array is a pointer type, it is assumed that each
+// pointer element in the d_array points to some malloc'd memory, which will be freed.
 void d_array__free(d_array *da);
 
 #endif /* D_ARRAY_H */
