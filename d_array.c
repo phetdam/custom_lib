@@ -48,6 +48,8 @@
  * 11-24-2018
  *
  * updated usage to more accurately reflect the current usage of the d_array project.
+ * updated d_array__remove() to remove the underlying memory of the d_array element 
+ * if the d_array is a pointer type.
  *
  * 11-23-2018
  *
@@ -441,7 +443,8 @@ void d_array__append(d_array *da, void *e) {
 // for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
 // decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
 // an attempt to remove an element will cause and error and halt execution. does not zero
-// the former last element of the d_array upon removal of an element.
+// the former last element of the d_array upon removal of an element. if the d_array is a
+// pointer type, then the memory pointed to by the pointer will also be removed.
 void d_array__remove(d_array *da, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
@@ -466,6 +469,10 @@ void d_array__remove(d_array *da, size_t i) {
     char *ca = (char *) da->a;
     // get size of element
     e_siz = da->e_siz;
+    // if da->t__ is a pointer type, free the underlying memory for the element i
+    if (*(da->t__ + strlen(da->t__) - 1) == '*') {
+	free(*((void **) ca + i));
+    }
     // for all elements c to da->siz - 2, copy the next element c + 1 to c
     for (c = i; c < da->siz - 1; c++) {
 	memcpy(c * e_siz + ca, (c + 1) * e_siz + ca, e_siz);
@@ -565,7 +572,8 @@ void d_array__set(d_array *da, size_t i, void *p) {
     memcpy(ca + i * da->e_siz, p, da->e_siz);
 }
 
-// frees a d_array struct
+// frees a d_array struct. if the d_array is a pointer type, it is assumed that each
+// pointer element in the d_array points to some malloc'd memory, which will be freed.
 void d_array__free(d_array *da) {
     // if da or da->a is NULL, print error and exit
     if (da == NULL || da->a == NULL) {
