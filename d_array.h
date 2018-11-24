@@ -19,6 +19,7 @@
  *
  * added type literal for void *, and corrected macro format for void * 
  * (D_ARRAY__VOID__PTR). updated free() to work properly with d_arrays of * type.
+ * added a comma in the macro D_ARRAY__VOID__PTR.
  *
  * 11-21-2018
  *
