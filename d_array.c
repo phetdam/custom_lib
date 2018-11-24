@@ -15,44 +15,39 @@
  *
  * sample usage:
  *
- * int n;
+ * int i, n;
  * n = 10;
- * d_array *da = d_array__new(n, sizeof(int));
- * int i;
- * for (i = 0; i < n; i++) {
- *     d_array__append(da, &i);
+ * char *s_str, *o_str;
+ * d_array *da;
+ * da = d_array__new(AUTO_SIZ, D_ARRAY__CHAR__PTR);
+ * printf("type of d_array at %p: %s, e_siz: %u\n", da, da->t__, da->e_siz);
+ * srand(17);
+ * for (i = 0; i < n * n; i++) {
+ *     s_str = (char *) malloc(n + 1);
+ *     for (j = 0; j < n; j++) {
+ *         *(s_str + j) = (char) (rand() % 26 + 97);
+ *     }
+ *     *(s_str + n) = '\0';
+ *     d_array__append(da, &s_str);
  * }
- * int j;
- * j = 444;
- * for (i = 0; i < n; i++) {
- *     d_array__insert(da, &j, n - 1);
+ * o_str = d_array__tostr(ALL__(da));
+ * printf("%s\n", o_str);
+ * free(o_str);
+ * for (i = 0; i < da->siz; i = i + 5) {
+ *     s_str = (char *) malloc(8);
+ *     strcpy(s_str, "BIGTING");
+ *     d_array__set(da, i, &s_str);
  * }
- * for (i = 0; i < da->siz; i++) {
- *     printf("%d", *((int *) d_array__get(da, i)));
- *     if (i < da->siz - 1) { printf(" "); }
- * }
- * printf("\n");
- * for (i = 0; i < n; i++) {
- *     d_array__remove(da, n / 2);
- * }
- * for (i = 0; i < da->siz; i++) {
- *     d_array__getcpy(&j, da, i);
- *     printf("%d", j);
- *     if (i < da->siz - 1) { printf(" "); }
- * }
- * printf("\n");
- * j = 7;
- * for (i = 0; i < n; i = i + 2) {
- *     d_array__set(da, i, &j);
- * }
- * for (i = 0; i < n; i++) {
- *     printf("%d", *((int *) d_array__get(da, i)));
- *     if (i < da->siz - 1) { printf(" "); }
- * }
- * printf("\n");
+ * o_str = d_array__tostr(ALL__(da));
+ * printf("%s\n", o_str);
+ * free(o_str);
  * d_array__free(da);
  *
  * Changelog:
+ *
+ * 11-24-2018
+ *
+ * updated usage to more accurately reflect the current usage of the d_array project.
  *
  * 11-23-2018
  *
