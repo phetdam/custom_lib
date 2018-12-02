@@ -45,6 +45,10 @@
  *
  * Changelog:
  *
+ * 12-02-2018
+ *
+ * updated comments to reflect changed line spacing in d_array.h
+ *
  * 11-24-2018
  *
  * updated usage to more accurately reflect the current usage of the d_array project.
@@ -172,8 +176,8 @@ char *__tostr_el__double(const void *e) {
 // return a char * to that string.
 // must free() string later or else memory will leak. can use ALL__(d_array *da) to write
 // all the elements of da to the string that d_array__tostr will return a char * to.
-// recommended to use a sep/pp format specifing macro for both default and user-defined types.
-// ex. d_array__tostr(da, 0, da->siz) -> d_array__tostr(ALL__(da))
+// recommended to use a sep/pp format specifying a macro for both default and user-defined
+// types. ex. d_array__tostr(da, 0, da->siz) -> d_array__tostr(ALL__(da))
 char *d_array__tostr(d_array *da, size_t si, size_t ei) {
     // if da is NULL, print error and exit
     if (da == NULL) {
@@ -182,7 +186,8 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
     }
     // if si > da->siz - 1, or ei > da->siz, print error and exit
     if (si > da->siz - 1 || ei > da->siz) {
-	fprintf(stderr, "%s: cannot return elements outside of array bounds of d_array at %p\n",
+	fprintf(stderr,
+		"%s: cannot return elements outside of array bounds of d_array at %p\n",
 		D_ARRAY__TOSTR_N, da);
 	exit(1);
     }
@@ -295,8 +300,9 @@ char *d_array__tostr(d_array *da, size_t si, size_t ei) {
 // n is the no. elements that can be added before a resize is needed, e is the size of each
 // element in the array (in bytes), __tef is a function that returns an element of the
 // d_array as a string, *__t is a char * to a string literal determining the type of da,
-// sep is the character printed between elements, __pr_c is the char printed before the first
-// element, and __ps_c is the char printed after the last element returned by d_array__tostr.
+// sep is the character printed between elements, __pr_c is the char printed before the
+// first element, and __ps_c is the char printed after the last element returned by
+// d_array__tostr.
 //
 // n and e must be positive, and __tef is optional, although then the d_array__tostr method
 // cannot be used on the d_array that has a NULL __tef (ex. void *).
@@ -308,7 +314,8 @@ d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), const ch
 		      char __sep, char __pr_c, char __ps_c) {
     // if n < 1, print error and exit
     if (n < 1) {
-	fprintf(stderr, "%s: number of starting elements must be positive\n", D_ARRAY__NEW_N);
+	fprintf(stderr,
+		"%s: number of starting elements must be positive\n", D_ARRAY__NEW_N);
 	exit(1);
     }
     // if e < 1, print error and exit
@@ -354,7 +361,8 @@ d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), const ch
 void d_array__insert(d_array *da, void *e, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
-	fprintf(stderr, "%s: cannot insert element into null d_array\n", D_ARRAY__INSERT_N);
+	fprintf(stderr, "%s: cannot insert element into null d_array\n",
+		D_ARRAY__INSERT_N);
 	exit(1);
     }
     // if e is NULL, print error and exit
@@ -366,7 +374,8 @@ void d_array__insert(d_array *da, void *e, size_t i) {
     // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
     // to explicitly test for negative values thanks to two's complement
     if (i > da->siz - 1) {
-	fprintf(stderr, "%s: cannot insert outside of defined array bounds of d_array at %p\n",
+	fprintf(stderr,
+		"%s: cannot insert outside of defined array bounds of d_array at %p\n",
 		D_ARRAY__INSERT_N, da);
 	exit(1);
     }
@@ -381,7 +390,8 @@ void d_array__insert(d_array *da, void *e, size_t i) {
 	da->a = realloc(da->a, da->max_siz * e_siz);
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
-	    fprintf(stderr, "%s: realloc failure inserting element at %p into d_array at %p\n",
+	    fprintf(stderr,
+		    "%s: realloc failure inserting element at %p into d_array at %p\n",
 		    D_ARRAY__INSERT_N, e, da);
 	    exit(2);
 	}
@@ -403,12 +413,13 @@ void d_array__insert(d_array *da, void *e, size_t i) {
     memcpy(i * e_siz + ca, e, e_siz);
 }
 
-// for d_array da, appends an item to da->a at index da->siz, writing da->e_siz bytes from e.
-// increments da->siz. trying to mix types is not recommended.
+// for d_array da, appends an item to da->a at index da->siz, writing da->e_siz bytes from
+// e. increments da->siz. trying to mix types is not recommended.
 void d_array__append(d_array *da, void *e) {
     // if da is NULL, print error and exit
     if (da == NULL) {
-	fprintf(stderr, "%s: cannot append element onto null d_array\n", D_ARRAY__APPEND_N);
+	fprintf(stderr, "%s: cannot append element onto null d_array\n",
+		D_ARRAY__APPEND_N);
 	exit(1);
     }
     // if e is NULL, print error and exit
@@ -426,7 +437,8 @@ void d_array__append(d_array *da, void *e) {
 	da->a = realloc(da->a, da->max_siz * e_siz);
 	// if da->a is NULL, print error and exit
 	if (da->a == NULL) {
-	    fprintf(stderr, "%s: realloc failure appending element at %p onto d_array at %p\n",
+	    fprintf(stderr,
+		    "%s: realloc failure appending element at %p onto d_array at %p\n",
 		    D_ARRAY__APPEND_N, e, da);
 	    exit(2);
 	}
@@ -440,27 +452,30 @@ void d_array__append(d_array *da, void *e) {
     memcpy((da->siz - 1) * e_siz + ca, e, e_siz);
 }
 
-// for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
-// decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
-// an attempt to remove an element will cause and error and halt execution. does not zero
-// the former last element of the d_array upon removal of an element. if the d_array is a
-// pointer type, then the memory pointed to by the pointer will also be removed.
+// for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will
+// be decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz
+// is 0, an attempt to remove an element will cause and error and halt execution. does not
+// zero the former last element of the d_array upon removal of an element. if the d_array
+// is a pointer type, then the memory pointed to by the pointer will also be removed.
 void d_array__remove(d_array *da, size_t i) {
     // if da is NULL, print error and exit
     if (da == NULL) {
-	fprintf(stderr, "%s: cannot remove element from null d_array\n", D_ARRAY__REMOVE_N);
+	fprintf(stderr, "%s: cannot remove element from null d_array\n",
+		D_ARRAY__REMOVE_N);
 	exit(1);
     }
     // if da->siz == 0, print error and exit
     if (da->siz == 0) {
-	fprintf(stderr, "%s: cannot remove element from empty d_array at %p\n", D_ARRAY__REMOVE_N, da);
+	fprintf(stderr, "%s: cannot remove element from empty d_array at %p\n",
+		D_ARRAY__REMOVE_N, da);
 	exit(1);
     }
     // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
-    // to explicitly test for negative values thanks to two's complement as da->siz - 1 >= 0)
+    // to explicitly test for negative values thanks to two's complement as
+    // da->siz - 1 >= 0)
     if (i > da->siz - 1) {
-	fprintf(stderr, "%s: cannot remove element from outside defined array bounds of d_array at %p\n",
-		D_ARRAY__REMOVE_N, da);
+	fprintf(stderr, "%s: cannot remove element from outside defined array bounds of "
+		"d_array at %p\n", D_ARRAY__REMOVE_N, da);
 	exit(1);
     }
     // loop counter, size of element (da->e_siz)
@@ -503,7 +518,8 @@ void *d_array__get(d_array *da, size_t i) {
     // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
     // to explicitly test for negative values thanks to two's complement
     if (i > da->siz - 1) {
-	fprintf(stderr, "%s: cannot retrieve data outside of defined bounds of d_array at %p\n",
+	fprintf(stderr,
+		"%s: cannot retrieve data outside of defined bounds of d_array at %p\n",
 		D_ARRAY__GET_N, da);
 	exit(1);
     }
@@ -532,7 +548,8 @@ void d_array__getcpy(void *p, d_array *da, size_t i) {
     // if i > da->siz - 1, print error and exit (size_t is unsigned, so we do not have
     // to explicitly test for negative values thanks to two's complement
     if (i > da->siz - 1) {
-	fprintf(stderr, "%s: cannot retrieve data outside of defined bounds of d_array at %p\n",
+	fprintf(stderr,
+		"%s: cannot retrieve data outside of defined bounds of d_array at %p\n",
 		D_ARRAY__GETCPY_N, da);
 	exit(1);
     }
