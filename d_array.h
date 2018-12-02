@@ -15,6 +15,11 @@
  *
  * Changelog:
  *
+ * 12-02-2018
+ *
+ * changed line spacings to make everything more readable on a smaller buffer (we want
+ * to avoid line wrapping!)
+ *
  * 11-24-2018
  *
  * made note about d_array__free() freeing the underlying memory pointed to by 
@@ -133,7 +138,8 @@ char *__tostr_el__double(const void *e);
 // correct format for separators and pre- + post- char
 #define D_ARRAY__INT sizeof(int), __tostr_el__int, __DATYPE__INT, ' ', '[', ']'
 #define D_ARRAY__CHAR sizeof(char), __tostr_el__char, __DATYPE__CHAR, '\0', '\0', '\0'
-#define D_ARRAY__CHAR__PTR sizeof(char *), __tostr_el__char__ptr, __DATYPE__CHAR__PTR, ',', '[', ']'
+#define D_ARRAY__CHAR__PTR sizeof(char *), __tostr_el__char__ptr, __DATYPE__CHAR__PTR, \
+    ',', '[', ']'
 #define D_ARRAY__LONG sizeof(long), __tostr_el__long, __DATYPE__LONG, ' ', '[', ']'
 #define D_ARRAY__DOUBLE sizeof(double), __tostr_el__double, __DATYPE__DOUBLE, ' ', '[', ']'
 #define D_ARRAY__VOID__PTR sizeof(void *), NULL, __DATYPE__VOID__PTR, '\0', '\0', '\0'
@@ -145,16 +151,17 @@ char *__tostr_el__double(const void *e);
 // return a char * to that string.
 // must free() string later or else memory will leak. can use ALL__(d_array *da) to write
 // all the elements of da to the string that d_array__tostr will return a char * to.
-// recommended to use a sep/pp format specifing macro for both default and user-defined types.
-// ex. d_array__tostr(da, 0, da->siz) -> d_array__tostr(ALL__(da))
+// recommended to use a sep/pp format specifying a macro for both default and user-defined
+// types. ex. d_array__tostr(da, 0, da->siz) -> d_array__tostr(ALL__(da))
 char *d_array__tostr(d_array *da, size_t si, size_t ei);
 // creates a new d_array; if DEFAULT_SIZ is given then number of elements before resize
 // is 10 by default, while with AUTO_SIZ the number will be 1, similar to Java's ArrayList.
 // n is the no. elements that can be added before a resize is needed, e is the size of each
 // element in the array (in bytes), __tef is a function that returns an element of the
 // d_array as a string, *__t is a char * to a string literal determining the type of da,
-// sep is the character printed between elements, __pr_c is the char printed before the first
-// element, and __ps_c is the char printed after the last element returned by d_array__tostr.
+// sep is the character printed between elements, __pr_c is the char printed before the
+// first element, and __ps_c is the char printed after the last element returned by
+// d_array__tostr.
 //
 // n and e must be positive, and __tef is optional, although then the d_array__tostr method
 // cannot be used on the d_array that has a NULL __tef (ex. void *).
@@ -168,14 +175,14 @@ d_array *d_array__new(size_t n, size_t e, char *(*__tef)(const void *), const ch
 // a new element into da. one cannot insert to an index less than 0 or greater than
 // da->siz - 1, or insert NULL. please do not try and mix types, for your own sanity.
 void d_array__insert(d_array *da, void *e, size_t i);
-// for d_array da, appends an item to da->a at index da->siz, writing da->e_siz bytes from e.
-// increments da->siz. trying to mix types is not recommended.
+// for d_array da, appends an item to da->a at index da->siz, writing da->e_siz bytes from
+// e. increments da->siz. trying to mix types is not recommended.
 void d_array__append(d_array *da, void *e);
-// for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will be
-// decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz is 0,
-// an attempt to remove an element will cause and error and halt execution. does not zero
-// the former last element of the d_array upon removal of an element. if the d_array is a
-// pointer type, then the memory pointed to by the pointer will also be removed.
+// for d_array da, removes an item at index i, where i >= 0 and i < da->siz. da->siz will
+// be decremented, and all elements shifted as appropriate to fill in the gaps. if da->siz
+// is 0, an attempt to remove an element will cause and error and halt execution. does not
+// zero the former last element of the d_array upon removal of an element. if the d_array
+// is a pointer type, then the memory pointed to by the pointer will also be removed.
 void d_array__remove(d_array *da, size_t i);
 // returns a void * to the element in d_array da located at index i
 void *d_array__get(d_array *da, size_t i);
